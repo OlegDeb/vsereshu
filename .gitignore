@@ -29,6 +29,9 @@ requirements_loc.txt
 config/settings.py
 config/settings_prod.py
 
+# Local tooling
+.code/
+
 # Static files (если собираетесь их игнорировать)
 /staticfiles/
 /media/
