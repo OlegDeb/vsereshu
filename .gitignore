@@ -25,6 +25,10 @@ basedpyrightconfig.json
 # Local requirements
 requirements_loc.txt
 
+# Django settings (локально)
+config/settings.py
+config/settings_prod.py
+
 # Static files (если собираетесь их игнорировать)
 /staticfiles/
 /media/
