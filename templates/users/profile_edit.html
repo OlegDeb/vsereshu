@@ -1,0 +1,21 @@
+<!-- templates/users/profile_edit.html -->
+{% extends 'base_profile.html' %}
+{% load crispy_forms_tags %}
+
+{% block profile_content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Редактирование профиля</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <div class="mt-4">
+                <button type="submit" class="btn btn-success">Сохранить изменения</button>
+                <a href="{% url 'profile' %}" class="btn btn-secondary">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

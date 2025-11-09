@@ -1,0 +1,23 @@
+# Django
+*.pyc
+*/__pycache__/
+db.sqlite3
+migrations/
+*.log
+
+# Environment
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Static files (если собираетесь их игнорировать)
+/staticfiles/
+/media/

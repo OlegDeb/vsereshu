@@ -1,0 +1,142 @@
+<!-- templates/users/public_profile.html -->
+{% extends 'base.html' %}
+
+{% block title %}Профиль - {{ profile_user.username }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <!-- Карточка профиля -->
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <!-- Аватар и основная информация -->
+                    <div class="col-md-4 text-center">
+                        {% if profile_user.avatar %}
+                            <img src="{{ profile_user.avatar.url }}" class="avatar rounded-circle mb-3" alt="Аватар">
+                        {% else %}
+                            <div class="avatar rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto mb-3">
+                                <span class="text-white fs-1">{{ profile_user.username|first|upper }}</span>
+                            </div>
+                        {% endif %}
+                        
+                        <h4>{{ profile_user.get_full_name|default:profile_user.username }}</h4>
+                        <p class="text-muted">@{{ profile_user.username }}</p>
+                        
+                        {% if profile_user.age %}
+                            <div class="mb-3">
+                                <span class="badge bg-info text-dark">{{ profile_user.display_age }}</span>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Информация о датах -->
+                        <div class="small text-muted mt-3">
+                            <p class="mb-1">
+                                <strong>Зарегистрирован:</strong><br>
+                                {{ profile_user.date_joined|date:"d.m.Y" }}
+                            </p>
+                            <p class="mb-0">
+                                <strong>На сайте:</strong><br>
+                                {{ user_days }} дней
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Детальная информация -->
+                    <div class="col-md-8">
+                        <div class="mb-4">
+                            <h5>О пользователе</h5>
+                            {% if profile_user.bio %}
+                                <p class="text-muted">{{ profile_user.bio }}</p>
+                            {% else %}
+                                <p class="text-muted">Пользователь пока ничего о себе не рассказал.</p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Контактная информация -->
+                        <div class="row">
+                            {% if profile_user.email %}
+                            <div class="col-6 mb-2">
+                                <strong>Email:</strong><br>
+                                <span class="text-muted">{{ profile_user.email }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if profile_user.phone_number %}
+                            <div class="col-6 mb-2">
+                                <strong>Телефон:</strong><br>
+                                <span class="text-muted">{{ profile_user.phone_number }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if profile_user.gender %}
+                            <div class="col-6 mb-2">
+                                <strong>Пол:</strong><br>
+                                <span class="text-muted">{{ profile_user.get_gender_display }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if profile_user.date_of_birth %}
+                            <div class="col-6 mb-2">
+                                <strong>Дата рождения:</strong><br>
+                                <span class="text-muted">{{ profile_user.date_of_birth|date:"d.m.Y" }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Статистика -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Статистика</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h3 class="text-primary">0</h3>
+                                <p class="mb-0 small">Завершенных задач</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h3 class="text-success">0</h3>
+                                <p class="mb-0 small">Активных проектов</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h3 class="text-info">{{ user_days }}</h3>
+                                <p class="mb-0 small">Дней с нами</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h3 class="text-warning">0</h3>
+                                <p class="mb-0 small">Достижений</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Кнопка для владельца профиля -->
+        {% if is_own_profile %}
+        <div class="text-center mt-4">
+            <a href="{% url 'profile' %}" class="btn btn-primary">Перейти в личный кабинет</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

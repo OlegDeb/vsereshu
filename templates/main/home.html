@@ -1,0 +1,53 @@
+<!-- templates/users/home.html -->
+{% extends 'base.html' %}
+
+{% block title %}Главная страница{% endblock %}
+
+{% block content %}
+<div class="jumbotron bg-light p-5 rounded">
+    <h1 class="display-4">Добро пожаловать!</h1>
+    <p class="lead">Это главная страница вашего проекта.</p>
+    <hr class="my-4">
+    
+    {% if user.is_authenticated %}
+        <p>Рады видеть вас снова, <strong>{{ user.username }}</strong>!</p>
+        <div class="d-flex gap-2">
+            <a class="btn btn-primary btn-lg" href="{% url 'profile' %}" role="button">Перейти в профиль</a>
+        </div>
+    {% else %}
+        <p>Присоединяйтесь к нашему сообществу!</p>
+        <div class="d-flex gap-2">
+            <a class="btn btn-primary btn-lg" href="{% url 'login' %}" role="button">Войти</a>
+            <a class="btn btn-outline-primary btn-lg" href="{% url 'register' %}" role="button">Регистрация</a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Дополнительный контент главной страницы -->
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Функция 1</h5>
+                <p class="card-text">Описание первой функции вашего проекта.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Функция 2</h5>
+                <p class="card-text">Описание второй функции вашего проекта.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Функция 3</h5>
+                <p class="card-text">Описание третьей функции вашего проекта.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

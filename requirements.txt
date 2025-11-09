@@ -1,0 +1,11 @@
+asgiref==3.10.0
+crispy-bootstrap5==2025.6
+Django==5.2.8
+django-crispy-forms==2.5
+django-stubs==5.2.7
+django-stubs-ext==5.2.7
+pillow==12.0.0
+psycopg2-binary==2.9.11
+sqlparse==0.5.3
+types-PyYAML==6.0.12.20250915
+typing_extensions==4.15.0

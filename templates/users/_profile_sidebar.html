@@ -1,0 +1,51 @@
+<!-- templates/users/_profile_sidebar.html -->
+<div class="card mb-3">
+    <div class="card-body text-center">
+        {% if user.avatar %}
+            <img src="{{ user.avatar.url }}" class="avatar rounded-circle mb-3" alt="Аватар">
+        {% else %}
+            <div class="avatar rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 150px; height: 150px;">
+                <span class="text-white fs-1">{{ user.username|first|upper }}</span>
+            </div>
+        {% endif %}
+        <h5>{{ user.get_full_name|default:user.username }}</h5>
+        <p class="text-muted">@{{ user.username }}</p>
+
+        <!-- Возраст -->
+        {% if user.age %}
+            <div class="mb-3">
+                <span class="badge bg-info text-dark">{{ user.display_age }}</span>
+            </div>
+        {% endif %}
+        
+        <!-- Информация о датах -->
+        <div class="small text-muted mt-3">
+            <p class="mb-1">
+                <strong>Зарегистрирован:</strong><br>
+                {{ user.date_joined|date:"d.m.Y" }}
+            </p>
+            <p class="mb-0">
+                <strong>Последний вход:</strong><br>
+                {{ user.last_login|date:"d.m.Y H:i" }}
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Меню профиля -->
+<div class="card">
+    <div class="card-header">
+        <h6 class="mb-0">Меню профиля</h6>
+    </div>
+    <div class="list-group list-group-flush">
+        <a href="{% url 'profile' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+            📊 Общая информация
+        </a>
+        <a href="{% url 'profile_edit' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'profile_edit' %}active{% endif %}">
+            ✏️ Редактировать профиль
+        </a>
+        <a href="{% url 'public_profile' user.username %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'public_profile' %}active{% endif %}">
+            👁️ Публичный профиль
+        </a>
+    </div>
+</div>

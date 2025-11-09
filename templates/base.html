@@ -1,0 +1,100 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Мой проект{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static "css/style.css" %}" rel="stylesheet">
+</head>
+<body>
+    <!-- Фиксированное верхнее меню -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
+        <div class="container">
+            <!-- Логотип слева -->
+            <a class="navbar-brand me-4" href="{% url 'home' %}">
+                <div class="logo-placeholder">
+                    ЛОГОТИП
+                </div>
+            </a>
+            
+            <!-- Основное меню по центру -->
+            <div class="navbar-collapse collapse justify-content-center">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'home' %}">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">О проекте</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Контакты</a>
+                    </li>
+                    <!-- Добавьте другие пункты меню здесь -->
+                </ul>
+            </div>
+            
+            <!-- Блок пользователя справа -->
+            <div class="navbar-nav ms-auto">
+                {% if user.is_authenticated %}
+                    <!-- Выпадающее меню пользователя -->
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                            {% if user.avatar %}
+                                <img src="{{ user.avatar.url }}" class="navbar-avatar rounded-circle me-2" alt="Аватар">
+                            {% else %}
+                                <div class="navbar-avatar rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2">
+                                    <span class="text-white small">{{ user.username|first|upper }}</span>
+                                </div>
+                            {% endif %}
+                            <span>Привет, {{ user.username }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'profile' %}">
+                                    👤 Мой профиль
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'profile_edit' %}">
+                                    ✏️ Редактировать профиль
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                                    🚪 Выйти
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                {% else %}
+                    <!-- Меню для неавторизованных пользователей -->
+                    <div class="d-flex">
+                        <a class="nav-link" href="{% url 'login' %}">Вход</a>
+                        <a class="nav-link" href="{% url 'register' %}">Регистрация</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Основной контент -->
+    <div class="container mt-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

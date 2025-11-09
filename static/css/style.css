@@ -1,0 +1,58 @@
+.avatar {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+}
+
+.navbar-avatar {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
+}
+
+.logo-placeholder {
+    width: 120px;
+    height: 40px;
+    background: #f8f9fa;
+    border: 1px dashed #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+body {
+    padding-top: 76px;
+    /* Высота фиксированного navbar */
+}
+
+
+@media (max-width: 768px) {
+    .navbar-collapse {
+        margin: 10px 0;
+    }
+
+    .navbar-nav .dropdown-menu {
+        position: absolute;
+    }
+
+    .logo-placeholder {
+        width: 100px;
+        height: 35px;
+        font-size: 12px;
+    }
+}
+
+/* Улучшение для выпадающего меню */
+.dropdown-menu {
+    min-width: 200px;
+}
+
+.navbar-brand {
+    margin-right: 1rem;
+}
