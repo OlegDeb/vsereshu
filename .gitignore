@@ -18,6 +18,13 @@ ENV/
 *.swp
 *.swo
 
+# Type checker configs (локально, не на сервере)
+pyrightconfig.json
+basedpyrightconfig.json
+
+# Local requirements
+requirements_loc.txt
+
 # Static files (если собираетесь их игнорировать)
 /staticfiles/
 /media/
