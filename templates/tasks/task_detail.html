@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}{{ task.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <h1 class="mb-3">{{ task.title }}</h1>
+        <p class="text-muted">
+            {{ task.created_at|date:"d E Y" }} ·
+            {{ task.get_status_display }}
+        </p>
+
+        <div class="mb-4">
+            {{ task.description|linebreaks }}
+        </div>
+
+        <section class="mb-4">
+            <h2 class="h5">Подробности</h2>
+            <dl class="row">
+                <dt class="col-sm-4">Категория</dt>
+                <dd class="col-sm-8">{{ task.category.name }}</dd>
+
+                <dt class="col-sm-4">Тип работы</dt>
+                <dd class="col-sm-8">{{ task.get_location_type_display }}</dd>
+
+                {% if task.city %}
+                    <dt class="col-sm-4">Город</dt>
+                    <dd class="col-sm-8">{{ task.city.name }}</dd>
+                {% endif %}
+
+                <dt class="col-sm-4">Модерация</dt>
+                <dd class="col-sm-8">
+                    {% if task.is_moderated %}
+                        Проверена{% if task.moderation_comment %}: {{ task.moderation_comment }}{% endif %}
+                    {% else %}
+                        Не проверена
+                    {% endif %}
+                </dd>
+            </dl>
+        </section>
+
+        <a class="btn btn-secondary" href="{% url 'tasks:task_list' %}">← Назад к списку</a>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h5">Автор</h2>
+                <p class="mb-1">{{ task.author.get_full_name|default:task.author.username }}</p>
+                <p class="text-muted small mb-0">Профиль: <a href="#">{{ task.author.username }}</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

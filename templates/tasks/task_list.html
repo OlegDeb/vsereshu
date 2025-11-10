@@ -36,8 +36,8 @@
                         </dl>
                     </div>
                     <div class="card-footer bg-transparent border-0">
-                        <a class="btn btn-outline-primary w-100 disabled" role="button" aria-disabled="true">
-                            Подробнее (в разработке)
+                        <a class="btn btn-outline-primary w-100" href="{% url 'tasks:task_detail' task.get_public_slug %}">
+                            Подробнее
                         </a>
                     </div>
                 </div>

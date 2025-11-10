@@ -1,9 +1,10 @@
 from django.urls import path
 
-from . import views
+from .views import task_detail, task_list
 
 app_name = "tasks"
 
 urlpatterns = [
-    path("", views.task_list, name="task_list"),
+    path("", task_list, name="task_list"),
+    path("<slug:slug>/", task_detail, name="task_detail"),
 ]
