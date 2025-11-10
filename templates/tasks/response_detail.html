@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}Общение по отклику{% endblock %}
+
+{% block page_header %}
+<!-- Блок с градиентом и заголовком -->
+<div class="task-header-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 60px 0 40px 0; margin: -32px calc(-50vw + 50%) 40px calc(-50vw + 50%); width: 100vw; position: relative;">
+    <div class="container">
+        <div class="text-center text-white">
+            <h1 class="display-5 fw-bold mb-3">Общение по отклику</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb justify-content-center mb-0" style="background-color: rgba(255, 255, 255, 0.2); border-radius: 0.375rem; padding: 0.75rem 1rem; display: inline-flex;">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'home' %}" class="text-white text-decoration-none">Главная</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'tasks:task_list' %}" class="text-white text-decoration-none">Задачи</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'tasks:task_detail' slug=response.task.get_public_slug %}" class="text-white text-decoration-none">{{ response.task.title|truncatewords:3 }}</a>
+                    </li>
+                    <li class="breadcrumb-item active text-white" aria-current="page">Общение</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Информация о задаче -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="h5 mb-0">Задача: {{ response.task.title }}</h3>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">{{ response.task.description|truncatewords:50 }}</p>
+            </div>
+        </div>
+
+        <!-- Чат -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="h5 mb-0">Сообщения</h3>
+            </div>
+            <div class="card-body">
+                <!-- Исходное сообщение отклика -->
+                <div class="mb-3 d-flex {% if response.candidate == user %}flex-row-reverse{% else %}flex-row{% endif %} align-items-center">
+                    <div class="me-2 {% if response.candidate == user %}ms-2{% endif %}">
+                        {% if response.candidate.avatar %}
+                            <img src="{{ response.candidate.avatar.url }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
+                        {% else %}
+                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <span class="text-white small">{{ response.candidate.username|first|upper }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow-1" style="max-width: 70%;">
+                        <div class="d-inline-block {% if response.candidate == user %}message-own{% else %}message-other{% endif %} p-3 rounded w-100">
+                            <div class="mb-1">
+                                <strong>{{ response.candidate.get_full_name|default:response.candidate.username }}</strong>
+                                <small class="text-muted">
+                                    {{ response.created_at|date:"d.m.Y H:i" }}
+                                </small>
+                                <span class="badge bg-secondary ms-2">Исходное сообщение</span>
+                            </div>
+                            <div>{{ response.message|linebreaks }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if message_list %}
+                    {% for message in message_list %}
+                        <div class="mb-3 d-flex {% if message.sender == user %}flex-row-reverse{% else %}flex-row{% endif %} align-items-center">
+                            <div class="me-2 {% if message.sender == user %}ms-2{% endif %}">
+                                {% if message.sender.avatar %}
+                                    <img src="{{ message.sender.avatar.url }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
+                                {% else %}
+                                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <span class="text-white small">{{ message.sender.username|first|upper }}</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1" style="max-width: 70%;">
+                                <div class="d-inline-block {% if message.sender == user %}message-own{% else %}message-other{% endif %} p-3 rounded w-100">
+                                    <div class="mb-1">
+                                        <strong>{{ message.sender.get_full_name|default:message.sender.username }}</strong>
+                                        <small class="text-muted">
+                                            {{ message.created_at|date:"d.m.Y H:i" }}
+                                        </small>
+                                    </div>
+                                    <div>{{ message.content|linebreaks }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Форма для отправки сообщения -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h3 class="h5 mb-3">Отправить сообщение</h3>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        {{ message_form.content.label_tag }}
+                        {{ message_form.content }}
+                        {% if message_form.content.errors %}
+                            <div class="text-danger small">{{ message_form.content.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-primary">Отправить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 sticky-sidebar">
+        <!-- Участники общения -->
+        <div class="card shadow-sm mb-3 sidebar-block-1">
+            <div class="card-body">
+                <h3 class="h5 mb-3">Участники общения</h3>
+                <p class="mb-2"><strong>Автор задачи:</strong></p>
+                <p class="mb-3">{{ response.task.author.get_full_name|default:response.task.author.username }}</p>
+                <p class="mb-2"><strong>Кандидат:</strong></p>
+                <p class="mb-0">{{ response.candidate.get_full_name|default:response.candidate.username }}</p>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm mb-3 sidebar-block-2">
+            <div class="card-body">
+                <h3 class="h5">Информация</h3>
+                <p class="mb-2"><strong>Задача:</strong></p>
+                <p class="mb-3"><a href="{% url 'tasks:task_detail' slug=response.task.get_public_slug %}">{{ response.task.title }}</a></p>
+                
+                <p class="mb-2"><strong>Дата отклика:</strong></p>
+                <p class="mb-3">{{ response.created_at|date:"d E Y в H:i" }}</p>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm mb-3 sidebar-block-3">
+            <div class="card-body">
+                <h3 class="h5 mb-3">Статусы</h3>
+                <p class="mb-2"><strong>Статус задачи:</strong></p>
+                <p class="mb-3">
+                    <span class="badge 
+                        {% if response.task.status == 'completed' %}bg-success
+                        {% elif response.task.status == 'awaiting_confirmation' %}bg-warning
+                        {% elif response.task.status == 'in_progress' %}bg-info
+                        {% elif response.task.status == 'closed' %}bg-secondary
+                        {% else %}bg-primary{% endif %}">
+                        {{ response.task.get_status_display }}
+                    </span>
+                </p>
+                <p class="mb-2"><strong>Статус отклика:</strong></p>
+                <p class="mb-0">
+                    <span class="badge 
+                        {% if response.status == 'accepted' %}bg-success
+                        {% elif response.status == 'rejected' %}bg-danger
+                        {% else %}bg-secondary{% endif %}">
+                        {{ response.get_status_display }}
+                    </span>
+                </p>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm sidebar-block-4">
+            <div class="card-body">
+                <h3 class="h5 mb-3">Действия</h3>
+                
+                {% if user == response.task.author and response.status == 'pending' %}
+                    <form method="post" action="{% url 'tasks:update_response_status' response_id=response.id %}" class="mb-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="status" value="accepted">
+                        <input type="hidden" name="redirect_to" value="response_detail">
+                        <button type="submit" class="btn btn-success btn-sm w-100">Принять отклик</button>
+                    </form>
+                    <form method="post" action="{% url 'tasks:update_response_status' response_id=response.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="status" value="rejected">
+                        <input type="hidden" name="redirect_to" value="response_detail">
+                        <button type="submit" class="btn btn-danger btn-sm w-100">Отклонить отклик</button>
+                    </form>
+                {% elif user == response.task.author and response.status != 'pending' %}
+                    {% if response.task.status == 'awaiting_confirmation' and response.status == 'accepted' %}
+                        <p class="text-muted small mb-3">Примите работу, если вас все устраивает</p>
+                    {% else %}
+                        <p class="text-muted small mb-0">Вы уже {{ response.get_status_display|lower }} этот отклик</p>
+                    {% endif %}
+                {% endif %}
+
+                {% if is_executor and response.task.status == 'in_progress' %}
+                    <form method="post" action="{% url 'tasks:complete_task' slug=response.task.get_public_slug %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-sm w-100">
+                            <i class="bi bi-check-circle me-1"></i>Завершить задачу
+                        </button>
+                    </form>
+                {% elif is_executor and response.task.status == 'awaiting_confirmation' %}
+                    <p class="text-muted small mb-0">Задача ожидает подтверждения заказчиком</p>
+                {% elif is_executor and response.task.status == 'completed' %}
+                    <p class="text-muted small mb-0">Задача завершена</p>
+                {% endif %}
+
+                {% if user == response.task.author and response.task.status == 'awaiting_confirmation' %}
+                    <form method="post" action="{% url 'tasks:accept_task_completion' slug=response.task.get_public_slug %}" class="mt-2">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success w-100 d-flex align-items-center justify-content-center" style="padding: 12px; font-weight: 500; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <i class="bi bi-check-circle me-2"></i>Принять работу
+                        </button>
+                    </form>
+                {% elif user == response.task.author and response.task.status == 'completed' %}
+                    <p class="text-muted small mb-0">Работа принята. Задача завершена.</p>
+                {% endif %}
+                
+                {% if not user == response.task.author and not is_executor and response.status != 'pending' %}
+                    <p class="text-muted small mb-0">Нет доступных действий</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Кнопка возврата к задаче -->
+        <div class="mt-3">
+            <a href="{% url 'tasks:task_detail' slug=response.task.get_public_slug %}" class="btn btn-primary w-100 d-flex align-items-center justify-content-center" style="padding: 12px; font-weight: 500; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <i class="bi bi-arrow-left me-2"></i>К задаче
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -14,16 +14,10 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
 }
 
-.logo-placeholder {
-    width: 120px;
+.navbar-logo {
     height: 40px;
-    background: #f8f9fa;
-    border: 1px dashed #dee2e6;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6c757d;
-    font-size: 14px;
+    width: auto;
+    object-fit: contain;
 }
 
 body {
@@ -41,10 +35,8 @@ body {
         position: absolute;
     }
 
-    .logo-placeholder {
-        width: 100px;
+    .navbar-logo {
         height: 35px;
-        font-size: 12px;
     }
 }
 
@@ -57,6 +49,90 @@ body {
     margin-right: 1rem;
 }
 
+/* Стили для ссылок в навбаре */
+.navbar-nav .nav-link {
+    font-weight: 600 !important;
+    color: #333 !important;
+    padding: 0.5rem 1rem !important;
+    transition: all 0.3s ease;
+    margin: 0 0.25rem;
+    position: relative;
+    border-bottom: 3px solid transparent;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #667eea !important;
+}
+
+.navbar-nav .nav-link.active {
+    color: #667eea !important;
+    border-bottom: 3px solid #667eea;
+}
+
 .text-brand-blue {
     color: #1e88e5 !important;
+}
+
+/* Стили для сообщений */
+.message-own {
+    background-color: #FFF9E6; /* Светло-кремовый */
+    color: #333;
+}
+
+.message-other {
+    background-color: #F0F4FF; /* Светло-лавандовый */
+    color: #333;
+}
+
+/* Липкий сайдбар */
+.sticky-sidebar {
+    position: sticky;
+    top: 76px; /* Высота navbar */
+    align-self: flex-start;
+    max-height: calc(100vh - 76px);
+    overflow-y: auto;
+}
+
+/* Фоновые цвета для блоков сайдбара */
+.sidebar-block-1 {
+    background-color: #E8F5E9; /* Светло-зеленый */
+    border: none !important;
+    border-radius: 0 !important;
+}
+
+.sidebar-block-2 {
+    background-color: #E3F2FD; /* Светло-голубой */
+    border: none !important;
+    border-radius: 0 !important;
+}
+
+.sidebar-block-3 {
+    background-color: #FFF3E0; /* Светло-оранжевый */
+    border: none !important;
+    border-radius: 0 !important;
+}
+
+.sidebar-block-4 {
+    background-color: #F3E5F5; /* Светло-фиолетовый */
+    border: none !important;
+    border-radius: 0 !important;
+}
+
+/* Градиент для кнопок */
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: none !important;
+    color: white !important;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #653a8f 100%) !important;
+    color: white !important;
+}
+
+.btn-primary:focus,
+.btn-primary:active {
+    background: linear-gradient(135deg, #5568d3 0%, #653a8f 100%) !important;
+    color: white !important;
+    box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.5) !important;
 }

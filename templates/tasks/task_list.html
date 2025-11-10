@@ -1,53 +1,167 @@
 {% extends "base.html" %}
 
-{% block title %}Задачи{% endblock %}
+{% block title %}{% if selected_category_obj %}{{ selected_category_obj.name }}{% else %}Задачи{% endif %}{% endblock %}
+
+{% block page_header %}
+<!-- Блок с градиентом и заголовком -->
+<div class="task-header-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 60px 0 40px 0; margin: -32px calc(-50vw + 50%) 40px calc(-50vw + 50%); width: 100vw; position: relative;">
+    <div class="container">
+        <div class="text-center text-white">
+            <h1 class="display-5 fw-bold mb-3">
+                {% if selected_category_obj %}
+                    {{ selected_category_obj.name }}
+                {% else %}
+                    Все задачи
+                {% endif %}
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb justify-content-center mb-0" style="background-color: rgba(255, 255, 255, 0.2); border-radius: 0.375rem; padding: 0.75rem 1rem; display: inline-flex;">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'home' %}" class="text-white text-decoration-none">Главная</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'tasks:task_list' %}" class="text-white text-decoration-none">Задачи</a>
+                    </li>
+                    {% if selected_category_obj %}
+                        <li class="breadcrumb-item active text-white" aria-current="page">{{ selected_category_obj.name }}</li>
+                    {% endif %}
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}
 
 {% block content %}
 <div class="row">
-    <div class="col-12">
-        <h1 class="mb-4">Все задачи</h1>
+    <!-- Основной контент -->
+    <div class="col-lg-9">
+
+        {% if tasks %}
+            <div class="list-group">
+                {% for task in tasks %}
+                    <div class="list-group-item list-group-item-action border rounded mb-3 shadow-sm p-3">
+                        <div class="row g-0">
+                            <!-- Левая часть: заголовок, описание и кнопка -->
+                            <div class="col-md-9 pe-md-2">
+                                <h5 class="mb-2 fw-bold">
+                                    <a href="{% url 'tasks:task_detail' task.get_public_slug %}" class="text-decoration-none" style="color: #003366;">
+                                        {{ task.title }}
+                                    </a>
+                                </h5>
+                                <p class="mb-3 text-muted">{{ task.description|truncatewords:50 }}</p>
+                                <a href="{% url 'tasks:task_detail' task.get_public_slug %}" class="btn btn-outline-primary">
+                                    Подробнее
+                                </a>
+                            </div>
+
+                            <!-- Правая часть: метаданные в столбик -->
+                            <div class="col-md-3 ps-md-1 mt-3 mt-md-0 border-start">
+                                <div class="d-flex flex-column gap-2 small text-muted ps-2">
+                                    <div>
+                                        <i class="bi bi-calendar me-1"></i>{{ task.created_at|date:"d E Y" }}
+                                    </div>
+                                    <div>
+                                        <i class="bi bi-tag me-1"></i>{{ task.category.name }}
+                                    </div>
+                                    <div>
+                                        <i class="bi bi-geo-alt me-1"></i>{{ task.get_location_type_display }}
+                                    </div>
+                                    {% if task.city %}
+                                        <div>
+                                            <i class="bi bi-geo me-1"></i>{{ task.city.name }}
+                                        </div>
+                                    {% endif %}
+                                    {% if task.price %}
+                                        <div class="text-primary fw-bold">
+                                            <i class="bi bi-currency-exchange me-1"></i>{{ task.price|floatformat:2 }} ₽ / {{ task.get_payment_period_display }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>Пока нет активных задач.
+            </div>
+        {% endif %}
     </div>
-</div>
-
-{% if tasks %}
-    <div class="row row-cols-1 row-cols-md-2 g-4">
-        {% for task in tasks %}
-            <div class="col">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body">
-                        <h2 class="h5 card-title mb-2">{{ task.title }}</h2>
-                        <p class="text-muted small mb-2">
-                            {{ task.created_at|date:"d E Y" }} ·
-                            {{ task.get_status_display }}
-                        </p>
-                        <p class="card-text">{{ task.description|truncatewords:40 }}</p>
-
-                        <dl class="row small mb-0">
-                            <dt class="col-sm-4">Категория:</dt>
-                            <dd class="col-sm-8">{{ task.category.name }}</dd>
-
-                            <dt class="col-sm-4">Тип работы:</dt>
-                            <dd class="col-sm-8">{{ task.get_location_type_display }}</dd>
-
-                            {% if task.city %}
-                                <dt class="col-sm-4">Город:</dt>
-                                <dd class="col-sm-8">{{ task.city.name }}</dd>
-                            {% endif %}
-                        </dl>
-                    </div>
-                    <div class="card-footer bg-transparent border-0">
-                        <a class="btn btn-outline-primary w-100" href="{% url 'tasks:task_detail' task.get_public_slug %}">
-                            Подробнее
-                        </a>
-                    </div>
+    
+    <!-- Сайдбар с фильтрами -->
+    <div class="col-lg-3 mb-4">
+        <div class="card shadow-sm sticky-top" style="top: 20px;">
+            <div class="card-body p-0">
+                <div class="accordion accordion-flush" id="filterAccordion">
+                    <!-- Разделы с категориями -->
+                    {% for section in sections %}
+                        <div class="accordion-item border-bottom">
+                            <h2 class="accordion-header" id="headingSection{{ section.id }}">
+                                <button class="accordion-button {% if selected_section != section.slug %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSection{{ section.id }}" aria-expanded="{% if selected_section == section.slug %}true{% else %}false{% endif %}" aria-controls="collapseSection{{ section.id }}">
+                                    {% if section.icon %}<i class="{{ section.icon }} me-2"></i>{% endif %}
+                                    {{ section.name }}
+                                </button>
+                            </h2>
+                            <div id="collapseSection{{ section.id }}" class="accordion-collapse collapse {% if selected_section == section.slug %}show{% endif %}" aria-labelledby="headingSection{{ section.id }}" data-bs-parent="#filterAccordion">
+                                <div class="accordion-body p-0">
+                                    <ul class="list-group list-group-flush">
+                                        {% for category in section.categories_list %}
+                                            <li class="list-group-item">
+                                                <a href="?section={{ section.slug }}&category={{ category.slug }}" class="text-decoration-none {% if selected_category == category.slug %}fw-bold text-primary{% else %}text-dark{% endif %}">
+                                                    {{ category.name }}
+                                                </a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
-        {% endfor %}
+        </div>
+        
+        <!-- Список городов -->
+        {% if cities %}
+            <div class="card shadow-sm mt-3">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="bi bi-geo-alt me-2"></i>Города
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for city in cities %}
+                            <a href="?{% if selected_section %}section={{ selected_section }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}city={{ city.id }}" 
+                               class="badge {% if selected_city and selected_city.id == city.id %}bg-primary{% else %}bg-secondary{% endif %} text-decoration-none">
+                                {{ city.name }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                    {% if selected_city %}
+                        <div class="mt-3">
+                            <a href="?{% if selected_section %}section={{ selected_section }}{% endif %}{% if selected_section and selected_category %}&{% endif %}{% if selected_category %}category={{ selected_category }}{% endif %}" 
+                               class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i>Сбросить фильтр по городу
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+        
+        <!-- Кнопка создать задачу -->
+        {% if user.is_authenticated %}
+            <div class="card shadow-sm mt-3">
+                <div class="card-body">
+                    <a href="{% url 'tasks:create_task' %}" class="btn btn-primary w-100">
+                        <i class="bi bi-plus-circle me-1"></i>Создать задачу
+                    </a>
+                </div>
+            </div>
+        {% endif %}
     </div>
-{% else %}
-    <div class="alert alert-info">
-        Пока нет активных задач.
-    </div>
-{% endif %}
+</div>
 {% endblock %}
-

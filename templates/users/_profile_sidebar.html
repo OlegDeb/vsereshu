@@ -38,13 +38,16 @@
         <h6 class="mb-0">Меню профиля</h6>
     </div>
     <div class="list-group list-group-flush">
-        <a href="{% url 'profile' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+        <a href="{% url 'users:profile' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
             📊 Общая информация
         </a>
-        <a href="{% url 'profile_edit' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'profile_edit' %}active{% endif %}">
+        <a href="{% url 'users:my_tasks' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'my_tasks' %}active{% endif %}">
+            📋 Мои задачи
+        </a>
+        <a href="{% url 'users:profile_edit' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'profile_edit' %}active{% endif %}">
             ✏️ Редактировать профиль
         </a>
-        <a href="{% url 'public_profile' user.username %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'public_profile' %}active{% endif %}">
+        <a href="{% url 'users:public_profile' user.username %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'public_profile' %}active{% endif %}">
             👁️ Публичный профиль
         </a>
     </div>

@@ -1,20 +1,24 @@
+<!-- templates/tasks/create_review.html -->
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block title %}Регистрация{% endblock %}
+{% block title %}Оставить отзыв{% endblock %}
 
 {% block page_header %}
 <!-- Блок с градиентом и заголовком -->
 <div class="task-header-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 60px 0 40px 0; margin: -32px calc(-50vw + 50%) 40px calc(-50vw + 50%); width: 100vw; position: relative;">
     <div class="container">
         <div class="text-center text-white">
-            <h1 class="display-5 fw-bold mb-3">Регистрация</h1>
+            <h1 class="display-5 fw-bold mb-3">Оставить отзыв</h1>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb justify-content-center mb-0" style="background-color: rgba(255, 255, 255, 0.2); border-radius: 0.375rem; padding: 0.75rem 1rem; display: inline-flex;">
                     <li class="breadcrumb-item">
                         <a href="{% url 'home' %}" class="text-white text-decoration-none">Главная</a>
                     </li>
-                    <li class="breadcrumb-item active text-white" aria-current="page">Регистрация</li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ task.get_absolute_url }}" class="text-white text-decoration-none">Задача</a>
+                    </li>
+                    <li class="breadcrumb-item active text-white" aria-current="page">Отзыв</li>
                 </ol>
             </nav>
         </div>
@@ -24,22 +28,27 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-6">
+    <div class="col-md-8">
         <div class="card">
             <div class="card-header">
-                <h4 class="mb-0">Регистрация</h4>
+                <h5 class="mb-0">Оставить отзыв о пользователе {{ reviewed_user.get_full_name|default:reviewed_user.username }}</h5>
             </div>
             <div class="card-body">
-                <form method="POST">
+                <div class="mb-4">
+                    <h6>Задача: <a href="{{ task.get_absolute_url }}">{{ task.title }}</a></h6>
+                </div>
+                
+                <form method="post">
                     {% csrf_token %}
                     {{ form|crispy }}
-                    <button type="submit" class="btn btn-primary w-100">Зарегистрироваться</button>
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">Оставить отзыв</button>
+                        <a href="{{ task.get_absolute_url }}" class="btn btn-secondary">Отмена</a>
+                    </div>
                 </form>
-                <div class="mt-3 text-center">
-                    <small>Уже есть аккаунт? <a href="{% url 'users:login' %}">Войдите</a></small>
-                </div>
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
+

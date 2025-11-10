@@ -1,6 +1,25 @@
 <!-- templates/users/profile.html -->
 {% extends 'base_profile.html' %}
 
+{% block profile_page_header %}
+<!-- Блок с градиентом и заголовком -->
+<div class="task-header-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 60px 0 40px 0; margin: -32px calc(-50vw + 50%) 40px calc(-50vw + 50%); width: 100vw; position: relative;">
+    <div class="container">
+        <div class="text-center text-white">
+            <h1 class="display-5 fw-bold mb-3">Мой профиль</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb justify-content-center mb-0" style="background-color: rgba(255, 255, 255, 0.2); border-radius: 0.375rem; padding: 0.75rem 1rem; display: inline-flex;">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'home' %}" class="text-white text-decoration-none">Главная</a>
+                    </li>
+                    <li class="breadcrumb-item active text-white" aria-current="page">Профиль</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
 {% block profile_content %}
 <div class="card">
     <div class="card-header">
@@ -20,13 +39,27 @@
             </div>
         </div>
         
+        <!-- Рейтинг -->
+        {% if average_rating %}
+        <div class="mb-4">
+            <h6 class="border-bottom pb-2">Рейтинг</h6>
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="fs-3 fw-bold text-warning">★</span>
+                    <span class="fs-4 fw-bold">{{ average_rating|floatformat:1 }}</span>
+                </div>
+                <span class="text-muted">на основе {{ reviews_count }} отзывов</span>
+            </div>
+        </div>
+        {% endif %}
+        
         <!-- Статистика -->
         <h6 class="border-bottom pb-2">Статистика</h6>
         <div class="row">
             <div class="col-md-3 col-6 mb-3">
                 <div class="card bg-light">
                     <div class="card-body text-center">
-                        <h3 class="text-primary">0</h3>
+                        <h3 class="text-primary">{{ completed_tasks_as_author|add:completed_tasks_as_executor }}</h3>
                         <p class="mb-0 small">Завершенных задач</p>
                     </div>
                 </div>
@@ -34,8 +67,16 @@
             <div class="col-md-3 col-6 mb-3">
                 <div class="card bg-light">
                     <div class="card-body text-center">
-                        <h3 class="text-success">0</h3>
+                        <h3 class="text-success">{{ active_tasks_as_author|add:active_tasks_as_executor }}</h3>
                         <p class="mb-0 small">Активных проектов</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <h3 class="text-warning">{{ reviews_count }}</h3>
+                        <p class="mb-0 small">Отзывов</p>
                     </div>
                 </div>
             </div>
@@ -47,15 +88,55 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3 col-6 mb-3">
-                <div class="card bg-light">
-                    <div class="card-body text-center">
-                        <h3 class="text-warning">0</h3>
-                        <p class="mb-0 small">Достижений</p>
+        </div>
+        
+        <!-- Отзывы -->
+        {% if reviews %}
+        <div class="mt-4">
+            <h6 class="border-bottom pb-2">Последние отзывы</h6>
+            {% for review in reviews %}
+            <div class="border-bottom pb-3 mb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="mb-2">
+                            <span class="badge bg-secondary text-white">
+                                {{ review.get_review_description }} на 
+                                {% for i in "12345"|make_list %}
+                                    {% if forloop.counter <= review.rating %}
+                                        <span class="text-warning">★</span>
+                                    {% else %}
+                                        <span class="text-muted">☆</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </span>
+                        </div>
+                        <p class="mb-2">{{ review.comment }}</p>
+                        <small class="text-muted">
+                            По задаче: 
+                            {% if review.can_view_task %}
+                                <a href="{{ review.task.get_absolute_url }}" class="text-decoration-none">{{ review.task.title }}</a>
+                            {% else %}
+                                {{ review.task.title }}
+                            {% endif %}
+                        </small>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="mb-1">
+                            <strong>
+                                <a href="{% url 'users:public_profile' review.reviewer.username %}" class="text-decoration-none d-block">
+                                    {{ review.reviewer.get_full_name|default:review.reviewer.username }}
+                                </a>
+                            </strong>
+                            <span class="text-muted d-block">@{{ review.reviewer.username }}</span>
+                            <small class="text-muted d-block">{{ review.created_at|date:"d.m.Y H:i" }}</small>
+                        </div>
                     </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
+        {% endif %}
     </div>
 </div>
+
 {% endblock %}

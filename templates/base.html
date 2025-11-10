@@ -15,16 +15,17 @@
         <div class="container">
             <!-- Логотип слева -->
             <a class="navbar-brand me-4" href="{% url 'home' %}">
-                <div class="logo-placeholder">
-                    ЛОГОТИП
-                </div>
+                <img src="{% static 'img/logo/logo.png' %}" alt="ВСЁ-РЕШУ" class="navbar-logo">
             </a>
             
             <!-- Основное меню по центру -->
             <div class="navbar-collapse collapse justify-content-center">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'home' %}">Главная</a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.namespace == 'tasks' %}active{% endif %}" href="{% url 'tasks:task_list' %}">Задачи</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">О проекте</a>
@@ -53,18 +54,24 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li>
-                                <a class="dropdown-item" href="{% url 'profile' %}">
+                                <a class="dropdown-item" href="{% url 'tasks:create_task' %}">
+                                    ➕ Создать задачу
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'users:profile' %}">
                                     👤 Мой профиль
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{% url 'profile_edit' %}">
+                                <a class="dropdown-item" href="{% url 'users:profile_edit' %}">
                                     ✏️ Редактировать профиль
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                                <a class="dropdown-item text-danger" href="{% url 'users:logout' %}">
                                     🚪 Выйти
                                 </a>
                             </li>
@@ -73,13 +80,17 @@
                 {% else %}
                     <!-- Меню для неавторизованных пользователей -->
                     <div class="d-flex">
-                        <a class="nav-link" href="{% url 'login' %}">Вход</a>
-                        <a class="nav-link" href="{% url 'register' %}">Регистрация</a>
+                        <a class="nav-link" href="{% url 'users:login' %}">Вход</a>
+                        <a class="nav-link" href="{% url 'users:register' %}">Регистрация</a>
                     </div>
                 {% endif %}
             </div>
         </div>
     </nav>
+
+    <!-- Блок с градиентом и заголовком (для всех страниц кроме главной) -->
+    {% block page_header %}
+    {% endblock %}
 
     <!-- Основной контент -->
     <div class="container mt-4">
