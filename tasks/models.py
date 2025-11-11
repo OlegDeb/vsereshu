@@ -8,8 +8,9 @@ from regions.models import City
 
 class Task(models.Model):
     class LocationType(models.TextChoices):
-        CITY = "city", "По месту"
-        REMOTE = "remote", "Удаленная работа"
+        SELF = "self", "У себя"
+        REMOTE = "remote", "Удаленно"
+        CUSTOMER = "customer", "У заказчика"
 
     class Status(models.TextChoices):
         OPEN = "open", "Открыта"
@@ -42,8 +43,8 @@ class Task(models.Model):
     location_type = models.CharField(
         max_length=10,
         choices=LocationType.choices,
-        default=LocationType.CITY,
-        verbose_name="Тип локации",
+        default=LocationType.CUSTOMER,
+        verbose_name="Место выполнения задачи",
     )
     city = models.ForeignKey(
         City,
@@ -52,7 +53,7 @@ class Task(models.Model):
         blank=True,
         related_name="tasks",
         verbose_name="Город",
-        help_text="Укажите город, если выбрана работа в городе",
+        help_text="Укажите город для работы у себя или у заказчика",
     )
     price = models.DecimalField(
         max_digits=10,

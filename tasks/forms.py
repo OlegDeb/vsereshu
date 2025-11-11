@@ -24,8 +24,8 @@ class TaskForm(forms.ModelForm):
             'category': forms.Select(attrs={
                 'class': 'form-select',
             }),
-            'location_type': forms.Select(attrs={
-                'class': 'form-select',
+            'location_type': forms.RadioSelect(attrs={
+                'class': 'form-check-input',
             }),
             'city': forms.Select(attrs={
                 'class': 'form-select',
@@ -44,13 +44,13 @@ class TaskForm(forms.ModelForm):
             'title': 'Заголовок задачи',
             'description': 'Описание задачи',
             'category': 'Категория',
-            'location_type': 'Тип работы',
+            'location_type': 'Место выполнения задачи',
             'city': 'Город',
             'price': 'Стоимость',
             'payment_period': 'Период оплаты',
         }
         help_texts = {
-            'city': 'Укажите город, если выбрана работа в городе',
+            'city': 'Укажите город для работы у себя или у заказчика',
             'price': 'Укажите стоимость работы',
             'payment_period': 'Выберите период оплаты',
         }
@@ -114,8 +114,8 @@ class TaskForm(forms.ModelForm):
             })
             category_field.empty_label = 'Сначала выберите раздел'
         
-        # Добавляем поле региона перед полем города (только если выбран тип работы "в городе")
-        # Поле региона будет показываться только когда location_type = CITY
+        # Добавляем поле региона перед полем города (только если выбран тип работы "У себя" или "У заказчика")
+        # Поле региона будет показываться только когда location_type = SELF или CUSTOMER
         self.fields['region'] = forms.ModelChoiceField(
             queryset=Region.objects.filter(is_active=True).order_by('name'),
             required=False,
@@ -232,15 +232,15 @@ class TaskForm(forms.ModelForm):
                     'city': 'Выбранный город не принадлежит выбранному региону.'
                 })
 
-        # Если выбрана работа в городе, регион и город обязательны
-        if location_type == Task.LocationType.CITY:
+        # Если выбрана работа у себя или у заказчика, регион и город обязательны
+        if location_type in [Task.LocationType.SELF, Task.LocationType.CUSTOMER]:
             if not region:
                 raise forms.ValidationError({
-                    'region': 'Укажите регион, если выбрана работа в городе.'
+                    'region': 'Укажите регион для выбранного места выполнения задачи.'
                 })
             if not city:
                 raise forms.ValidationError({
-                    'city': 'Укажите город, если выбрана работа в городе.'
+                    'city': 'Укажите город для выбранного места выполнения задачи.'
                 })
 
         # Если выбрана удаленная работа, город и регион не нужны

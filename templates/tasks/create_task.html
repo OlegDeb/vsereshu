@@ -92,10 +92,21 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="{{ form.location_type.id_for_label }}" class="form-label">
+                        <label class="form-label mb-3 d-block">
                             {{ form.location_type.label }}
                         </label>
-                        {{ form.location_type }}
+                        <div class="row g-3">
+                            {% for radio in form.location_type %}
+                                <div class="col-md-4">
+                                    <label class="location-type-radio-card p-3 rounded h-100 d-block mb-0" style="cursor: pointer; display: flex; align-items: flex-start;" for="{{ radio.id_for_label }}">
+                                        {{ radio.tag }}
+                                        <span class="ms-2 flex-grow-1">
+                                            {{ radio.choice_label }}
+                                        </span>
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
                         {% if form.location_type.errors %}
                             <div class="text-danger small mt-1">{{ form.location_type.errors }}</div>
                         {% endif %}
@@ -185,16 +196,53 @@
     </div>
 </div>
 
+<style>
+    .location-type-radio-card {
+        transition: all 0.3s ease;
+        user-select: none;
+        border: 1px solid #dee2e6;
+        background-color: #ffffff;
+    }
+    .location-type-radio-card:hover {
+        background-color: #f8f9fa;
+        border-color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+    }
+    .location-type-radio-card:has(input[type="radio"]:checked) {
+        background-color: #e7f3ff;
+        border-color: #667eea;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
+    .location-type-radio-card:has(input[type="radio"]:checked) span {
+        font-weight: 600;
+        color: #667eea;
+    }
+    .location-type-radio-card input[type="radio"] {
+        margin-top: 0.125rem;
+        flex-shrink: 0;
+    }
+    .location-type-radio-card input[type="radio"]:focus-visible {
+        outline: 2px solid #667eea;
+        outline-offset: 2px;
+        border-radius: 50%;
+    }
+    .location-type-radio-card span {
+        line-height: 1.5;
+    }
+</style>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Показываем/скрываем поля региона и города в зависимости от типа работы
-        const locationTypeField = document.getElementById('{{ form.location_type.id_for_label }}');
+        // Показываем/скрываем поля региона и города в зависимости от места выполнения задачи
+        const locationTypeRadios = document.querySelectorAll('input[name="location_type"]');
         const locationFields = document.getElementById('location-fields');
         const regionField = document.getElementById('id_region');
         const cityField = document.getElementById('id_city');
 
         function toggleLocationFields() {
-            if (locationTypeField.value === 'city') {
+            const selectedValue = document.querySelector('input[name="location_type"]:checked')?.value;
+            if (selectedValue === 'self' || selectedValue === 'customer') {
                 locationFields.style.display = 'flex';
                 if (regionField) regionField.required = true;
                 if (cityField) cityField.required = true;
@@ -214,8 +262,10 @@
         // Инициализация при загрузке страницы
         toggleLocationFields();
 
-        // Обработчик изменения типа работы
-        locationTypeField.addEventListener('change', toggleLocationFields);
+        // Обработчик изменения места выполнения задачи для всех радиокнопок
+        locationTypeRadios.forEach(radio => {
+            radio.addEventListener('change', toggleLocationFields);
+        });
 
         // Динамическая загрузка категорий по разделу
         const sectionField = document.getElementById('id_section');
