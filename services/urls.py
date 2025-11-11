@@ -5,7 +5,7 @@ app_name = 'services'
 
 urlpatterns = [
     # Главная страница услуг
-    #path('', views.service_list, name='service_list'),
+    path('', views.service_list, name='service_list'),
     
     # Услуги по категории
     #path('category/<str:category_slug>/', views.services_by_category, name='services_by_category'),

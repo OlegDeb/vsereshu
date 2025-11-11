@@ -28,12 +28,14 @@
                         <a class="nav-link {% if request.resolver_match.namespace == 'tasks' %}active{% endif %}" href="{% url 'tasks:task_list' %}">Задачи</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">О проекте</a>
+                        <a class="nav-link {% if request.resolver_match.namespace == 'services' %}active{% endif %}" href="{% url 'services:service_list' %}">Услуги</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Контакты</a>
+                        <a class="nav-link {% if request.resolver_match.namespace == 'pages' %}active{% endif %}" href="{% url 'pages:page_list' %}">Информация</a>
                     </li>
-                    <!-- Добавьте другие пункты меню здесь -->
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.namespace == 'articles' %}active{% endif %}" href="{% url 'articles:article_list' %}">Статьи</a>
+                    </li>
                 </ul>
             </div>
             

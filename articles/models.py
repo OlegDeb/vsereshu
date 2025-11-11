@@ -30,6 +30,7 @@ class Article(models.Model):
 	public = models.BooleanField(verbose_name='Публиковать на сайте', default=True)
 	sidebar = models.BooleanField(verbose_name='Популярная статья', default=False)
 	slug = models.SlugField("url", max_length=250)
+	views = models.PositiveIntegerField(verbose_name='Просмотры', default=0)
 
 	image_mini = ImageSpecField(source='image', processors=[ResizeToFill(65, 65)], format='JPEG', options={'quality': 80})
 	image_list = ImageSpecField(source='image', processors=[ResizeToFill(400, 200)], format='JPEG', options={'quality': 80})

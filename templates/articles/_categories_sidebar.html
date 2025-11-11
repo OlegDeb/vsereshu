@@ -1,0 +1,39 @@
+<!-- Сайдбар с категориями статей -->
+<div class="card mb-3">
+    <div class="list-group list-group-flush">
+        {% for category in categories %}
+            {% if category.articles_count > 0 %}
+                <a href="{% url 'articles:articles_by_category' category.slug %}" 
+                   class="list-group-item list-group-item-action {% if selected_category and selected_category.slug == category.slug %}active{% endif %}"
+                   {% if selected_category and selected_category.slug == category.slug %}style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-color: #667eea;"{% endif %}>
+                    {{ category.name }}
+                    <span class="badge bg-secondary float-end">{{ category.articles_count }}</span>
+                </a>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Популярные статьи -->
+{% if popular_articles %}
+<div class="card">
+    <div class="card-header">
+        <h6 class="mb-0">Популярные статьи</h6>
+    </div>
+    <div class="list-group list-group-flush">
+        {% for popular_article in popular_articles %}
+            <a href="{% url 'articles:article_detail' popular_article.slug %}" class="list-group-item list-group-item-action">
+                <div class="d-flex align-items-center">
+                    {% if popular_article.image %}
+                        <img src="{{ popular_article.image_mini.url }}" class="rounded me-3" alt="{{ popular_article.title }}" style="width: 65px; height: 65px; object-fit: cover;">
+                    {% endif %}
+                    <div class="flex-grow-1">
+                        <h6 class="mb-0 fw-bold">{{ popular_article.title|truncatewords:8 }}</h6>
+                    </div>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+

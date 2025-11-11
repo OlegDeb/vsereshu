@@ -1,0 +1,17 @@
+<!-- Сайдбар со списком информационных страниц -->
+<div class="card">
+    <div class="list-group list-group-flush">
+        {% for page_item in pages_list %}
+            <a href="{% url 'pages:page_detail' page_item.slug %}" 
+               class="list-group-item list-group-item-action {% if page and page_item.slug == page.slug %}active{% endif %}"
+               {% if page and page_item.slug == page.slug %}style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-color: #667eea;"{% endif %}>
+                {{ page_item.title }}
+            </a>
+        {% empty %}
+            <div class="list-group-item text-muted">
+                Нет доступных страниц
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
