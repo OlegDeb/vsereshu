@@ -1,0 +1,297 @@
+from django import forms
+from django.forms import ModelChoiceField
+from django.utils.text import slugify
+from .models import Service, ServiceMessage
+from categories.models import Category, CategorySection
+from regions.models import City, Region
+
+
+class ServiceForm(forms.ModelForm):
+    """Форма для создания услуги"""
+    class Meta:
+        model = Service
+        fields = ['title', 'description', 'category', 'location_type', 'city', 'price', 'payment_period']
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Введите название услуги...'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 8,
+                'placeholder': 'Опишите услугу подробно...'
+            }),
+            'category': forms.Select(attrs={
+                'class': 'form-select',
+            }),
+            'location_type': forms.RadioSelect(attrs={
+                'class': 'form-check-input',
+            }),
+            'city': forms.Select(attrs={
+                'class': 'form-select',
+            }),
+            'price': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': '0.00',
+                'step': '0.01',
+                'min': '0',
+            }),
+            'payment_period': forms.Select(attrs={
+                'class': 'form-select',
+            }),
+        }
+        labels = {
+            'title': 'Название услуги',
+            'description': 'Описание услуги',
+            'category': 'Категория',
+            'location_type': 'Место оказания услуги',
+            'city': 'Город',
+            'price': 'Стоимость услуги',
+            'payment_period': 'Период для стоимости',
+        }
+        help_texts = {
+            'city': 'Укажите город для работы у себя или у заказчика',
+            'price': 'Укажите стоимость услуги',
+            'payment_period': 'Выберите период оплаты',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Добавляем поле раздела перед полем категории
+        self.fields['section'] = forms.ModelChoiceField(
+            queryset=CategorySection.objects.filter(is_active=True).order_by('name'),
+            required=True,
+            label='Раздел',
+            help_text='Сначала выберите раздел, затем категорию',
+            widget=forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'id_section',
+            }),
+            empty_label='Выберите раздел'
+        )
+        
+        # Если услуга редактируется, устанавливаем начальное значение раздела
+        if self.instance and self.instance.pk and hasattr(self.instance, 'category'):
+            if self.instance.category:
+                self.fields['section'].initial = self.instance.category.section_id
+        
+        # Фильтруем категории по разделу (если раздел выбран)
+        category_field = self.fields['category']
+        if isinstance(category_field, ModelChoiceField):
+            # Если услуга редактируется и есть категория, показываем категории её раздела
+            if self.instance and self.instance.pk and hasattr(self.instance, 'category'):
+                if self.instance.category:
+                    category_field.queryset = Category.objects.filter(
+                        section=self.instance.category.section,
+                        is_active=True
+                    ).select_related('section')
+                else:
+                    category_field.queryset = Category.objects.none()
+            else:
+                # При создании новой услуги проверяем, есть ли раздел в POST данных
+                section_id = None
+                if args and hasattr(args[0], 'get'):
+                    section_id = args[0].get('section')
+                
+                if section_id:
+                    try:
+                        section_obj = CategorySection.objects.get(pk=section_id, is_active=True)
+                        category_field.queryset = Category.objects.filter(
+                            section=section_obj,
+                            is_active=True
+                        ).select_related('section')
+                    except (CategorySection.DoesNotExist, ValueError):
+                        category_field.queryset = Category.objects.none()
+                else:
+                    category_field.queryset = Category.objects.none()
+            
+            category_field.widget.attrs.update({
+                'class': 'form-select',
+                'id': 'id_category',
+            })
+            category_field.empty_label = 'Сначала выберите раздел'
+        
+        # Добавляем поле региона перед полем города
+        self.fields['region'] = forms.ModelChoiceField(
+            queryset=Region.objects.filter(is_active=True).order_by('name'),
+            required=False,
+            label='Регион',
+            help_text='Сначала выберите регион, затем город',
+            widget=forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'id_region',
+            }),
+            empty_label='Выберите регион'
+        )
+        
+        # Если услуга редактируется и есть город, устанавливаем начальное значение региона
+        if self.instance and self.instance.pk and hasattr(self.instance, 'city'):
+            if self.instance.city:
+                self.fields['region'].initial = self.instance.city.region_id
+        
+        # Фильтруем города по региону (если регион выбран)
+        city_field = self.fields['city']
+        if isinstance(city_field, ModelChoiceField):
+            # Если услуга редактируется и есть город, показываем города его региона
+            if self.instance and self.instance.pk and hasattr(self.instance, 'city'):
+                if self.instance.city:
+                    city_field.queryset = City.objects.filter(
+                        region=self.instance.city.region,
+                        is_active=True
+                    ).select_related('region')
+                else:
+                    city_field.queryset = City.objects.none()
+            else:
+                # При создании новой услуги проверяем, есть ли регион в POST данных
+                region_id = None
+                if args and hasattr(args[0], 'get'):
+                    region_id = args[0].get('region')
+                
+                if region_id:
+                    try:
+                        region_obj = Region.objects.get(pk=region_id, is_active=True)
+                        city_field.queryset = City.objects.filter(
+                            region=region_obj,
+                            is_active=True
+                        ).select_related('region')
+                    except (Region.DoesNotExist, ValueError):
+                        city_field.queryset = City.objects.none()
+                else:
+                    city_field.queryset = City.objects.none()
+            
+            city_field.widget.attrs.update({
+                'class': 'form-select',
+                'id': 'id_city',
+            })
+            city_field.empty_label = 'Сначала выберите регион'
+        
+        # Делаем город необязательным
+        self.fields['city'].required = False
+        # Делаем стоимость необязательной
+        self.fields['price'].required = False
+        
+        # Добавляем поле is_active только при редактировании
+        if self.instance and self.instance.pk:
+            self.fields['is_active'] = forms.BooleanField(
+                required=False,
+                initial=self.instance.is_active,
+                label='Показывать услугу',
+                help_text='Снимите галочку, чтобы скрыть услугу из общего списка',
+                widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+            )
+        
+        # Переупорядочиваем поля: section должен быть перед category
+        field_order = list(self.fields.keys())
+        if 'section' in field_order and 'category' in field_order:
+            section_idx = field_order.index('section')
+            category_idx = field_order.index('category')
+            if section_idx > category_idx:
+                field_order.remove('section')
+                field_order.insert(category_idx, 'section')
+
+    def clean_category(self):
+        """Валидация категории с учетом выбранного раздела"""
+        return self.cleaned_data.get('category')
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        if not cleaned_data:
+            return cleaned_data
+        
+        section = cleaned_data.get('section')
+        category = cleaned_data.get('category')
+        location_type = cleaned_data.get('location_type')
+        region = cleaned_data.get('region')
+        city = cleaned_data.get('city')
+
+        # Проверяем, что категория принадлежит выбранному разделу
+        if section and category:
+            if category.section_id != section.id:
+                raise forms.ValidationError({
+                    'category': 'Выбранная категория не принадлежит выбранному разделу.'
+                })
+        
+        # Если категория выбрана, но раздела нет, это ошибка
+        if category and not section:
+            raise forms.ValidationError({
+                'section': 'Необходимо выбрать раздел перед выбором категории.'
+            })
+
+        # Проверяем, что город принадлежит выбранному региону
+        if region and city:
+            if city.region_id != region.id:
+                raise forms.ValidationError({
+                    'city': 'Выбранный город не принадлежит выбранному региону.'
+                })
+
+        # Если выбрана работа у себя или у заказчика, регион и город обязательны
+        if location_type in [Service.LocationType.SELF, Service.LocationType.CUSTOMER]:
+            if not region:
+                raise forms.ValidationError({
+                    'region': 'Укажите регион для выбранного места оказания услуги.'
+                })
+            if not city:
+                raise forms.ValidationError({
+                    'city': 'Укажите город для выбранного места оказания услуги.'
+                })
+
+        # Если выбрана удаленная работа, город и регион не нужны
+        if location_type == Service.LocationType.REMOTE:
+            cleaned_data['city'] = None
+            cleaned_data['region'] = None
+
+        return cleaned_data
+
+    def save(self, commit=True, author=None):
+        service = super().save(commit=False)
+        if author:
+            service.author = author
+        
+        # Удаляем поля section и region из cleaned_data
+        if 'section' in self.cleaned_data:
+            del self.cleaned_data['section']
+        if 'region' in self.cleaned_data:
+            del self.cleaned_data['region']
+        
+        # Генерируем slug из title, если его нет
+        if not service.slug:
+            base_slug = slugify(service.title)
+            slug = base_slug
+            counter = 1
+            # Проверяем уникальность slug
+            while Service.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            service.slug = slug
+        
+        # Если услуга редактируется и была проверена модератором, отправляем на повторную модерацию
+        if service.pk:
+            try:
+                original_service = Service.objects.get(pk=service.pk)
+                if original_service.is_moderated:
+                    service.is_moderated = False
+            except Service.DoesNotExist:
+                pass
+
+        if commit:
+            service.save()
+        return service
+
+
+class ServiceMessageForm(forms.ModelForm):
+    """Форма для отправки сообщения по услуге"""
+    class Meta:
+        model = ServiceMessage
+        fields = ['content']
+        widgets = {
+            'content': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Введите ваше сообщение автору услуги...'
+            }),
+        }
+        labels = {
+            'content': 'Сообщение',
+        }
+

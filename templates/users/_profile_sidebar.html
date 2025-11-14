@@ -44,6 +44,9 @@
         <a href="{% url 'users:my_tasks' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'my_tasks' %}active{% endif %}">
             📋 Мои задачи
         </a>
+        <a href="{% url 'users:my_services' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'my_services' %}active{% endif %}">
+            🛠️ Мои услуги
+        </a>
         <a href="{% url 'users:profile_edit' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'profile_edit' %}active{% endif %}">
             ✏️ Редактировать профиль
         </a>

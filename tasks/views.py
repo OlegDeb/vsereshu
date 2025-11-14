@@ -195,6 +195,10 @@ def task_detail(request, slug: str):
         if not (is_author or is_executor_check or is_admin):
             messages.error(request, "У вас нет доступа к этой задаче.")
             return redirect("tasks:task_list")
+    else:
+        # Увеличиваем счетчик просмотров только для публичных задач (не в работе, не выполненных)
+        task.views += 1
+        task.save(update_fields=['views'])
     
     # Получаем отклики на задачу
     responses = None
@@ -393,12 +397,19 @@ def send_message(request, response_id: int):
         message.task_response = response
         message.sender = request.user
         message.save()
+        
+        # Получаем полное имя отправителя
+        sender_name = message.sender.get_full_name() or message.sender.username
+        sender_avatar = message.sender.avatar.url if message.sender.avatar else None
+        
         return JsonResponse({
             "success": True,
             "message": {
                 "id": message.id,
                 "content": message.content,
                 "sender": message.sender.username,
+                "sender_name": sender_name,
+                "sender_avatar": sender_avatar,
                 "created_at": message.created_at.strftime("%d.%m.%Y %H:%M"),
             }
         })

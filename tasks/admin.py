@@ -29,12 +29,13 @@ class TaskAdmin(admin.ModelAdmin):
         "status",
         "is_active",
         "moderation_status",
+        "views",
         "created_at",
     )
     list_filter = ("status", "location_type", "category", "city", "is_active", "is_moderated")
     search_fields = ("title", "description", "slug", "author__username", "moderation_comment")
     prepopulated_fields = {"slug": ("title",)}
-    readonly_fields = ("created_at", "updated_at")
+    readonly_fields = ("views", "created_at", "updated_at")
     actions = [approve_tasks, send_to_moderation]
     
     fieldsets = (
@@ -46,6 +47,9 @@ class TaskAdmin(admin.ModelAdmin):
         }),
         ("Статус", {
             "fields": ("status", "is_active")
+        }),
+        ("Статистика", {
+            "fields": ("views",)
         }),
         ("Модерация", {
             "fields": ("is_moderated", "moderation_comment")

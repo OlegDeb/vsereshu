@@ -5,9 +5,11 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
+from django.db import models
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 from .models import CustomUser
 from tasks.models import Task, TaskResponse
+from services.models import Service
 
 def register(request):
     if request.method == 'POST':
@@ -74,6 +76,28 @@ def profile(request):
         is_active=True
     ).distinct().count()
     
+    # Статистика услуг
+    total_services = Service.objects.filter(
+        author=request.user,
+        is_active=True
+    ).count()
+    
+    moderated_services = Service.objects.filter(
+        author=request.user,
+        is_active=True,
+        is_moderated=True
+    ).count()
+    
+    total_services_views = Service.objects.filter(
+        author=request.user,
+        is_active=True
+    ).aggregate(total=models.Sum('views'))['total'] or 0
+    
+    total_services_orders = Service.objects.filter(
+        author=request.user,
+        is_active=True
+    ).aggregate(total=models.Sum('orders_count'))['total'] or 0
+    
     context = {
         'user_days': user_days,
         'reviews': reviews,
@@ -83,6 +107,10 @@ def profile(request):
         'completed_tasks_as_executor': completed_tasks_as_executor,
         'active_tasks_as_author': active_tasks_as_author,
         'active_tasks_as_executor': active_tasks_as_executor,
+        'total_services': total_services,
+        'moderated_services': moderated_services,
+        'total_services_views': total_services_views,
+        'total_services_orders': total_services_orders,
     }
     return render(request, 'users/profile.html', context)
 
@@ -114,6 +142,21 @@ def my_tasks(request):
         'active_tab': active_tab,
     }
     return render(request, 'users/my_tasks.html', context)
+
+
+@login_required
+def my_services(request):
+    """Страница с услугами пользователя"""
+    # Все услуги пользователя
+    services = Service.objects.filter(
+        author=request.user,
+        is_active=True
+    ).select_related("category", "city").order_by("-created_at")
+    
+    context = {
+        'services': services,
+    }
+    return render(request, 'users/my_services.html', context)
 
 @login_required
 def profile_edit(request):
@@ -190,6 +233,30 @@ def public_profile(request, username):
         is_active=True
     ).distinct().count()
     
+    # Статистика услуг
+    total_services = Service.objects.filter(
+        author=user,
+        is_active=True
+    ).count()
+    
+    moderated_services = Service.objects.filter(
+        author=user,
+        is_active=True,
+        is_moderated=True
+    ).count()
+    
+    services_views = Service.objects.filter(
+        author=user,
+        is_active=True
+    ).aggregate(total_views=models.Sum('views'))['total_views'] or 0
+    
+    # Получаем список услуг пользователя (только опубликованные)
+    user_services = Service.objects.filter(
+        author=user,
+        is_active=True,
+        is_moderated=True
+    ).select_related("category", "city").order_by("-created_at")[:6]
+    
     context = {
         'profile_user': user,
         'user_days': user_days,
@@ -201,6 +268,10 @@ def public_profile(request, username):
         'completed_tasks_as_executor': completed_tasks_as_executor,
         'active_tasks_as_author': active_tasks_as_author,
         'active_tasks_as_executor': active_tasks_as_executor,
+        'total_services': total_services,
+        'moderated_services': moderated_services,
+        'services_views': services_views,
+        'user_services': user_services,
     }
     
     return render(request, 'users/public_profile.html', context)

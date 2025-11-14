@@ -31,6 +31,7 @@ config/settings_prod.py
 
 # Local tooling
 .code/
+cmd.txt
 
 # Static files (если собираетесь их игнорировать)
 /staticfiles/

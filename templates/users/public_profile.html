@@ -162,8 +162,104 @@
                         </div>
                     </div>
                 </div>
+                <!-- Статистика услуг -->
+                <div class="row mt-2">
+                    <div class="col-md-4 col-6 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h3 class="text-primary">{{ moderated_services }}</h3>
+                                <p class="mb-0 small">Опубликованных услуг</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-6 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h3 class="text-success">{{ services_views }}</h3>
+                                <p class="mb-0 small">Просмотров услуг</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-6 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h3 class="text-info">{{ total_services }}</h3>
+                                <p class="mb-0 small">Всего услуг</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+        
+        <!-- Услуги пользователя -->
+        {% if user_services %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Услуги пользователя ({{ moderated_services }})</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    {% for service in user_services %}
+                    <div class="col-md-6">
+                        <div class="card h-100 shadow-sm border-0" style="border-radius: 10px; background-color: #ffffff; border: 1px solid #e9ecef !important;">
+                            <div class="card-body d-flex flex-column">
+                                <h6 class="card-title fw-bold mb-2" style="color: #667eea;">
+                                    <a href="{% url 'services:service_detail' service.get_public_slug %}" class="text-decoration-none" style="color: #667eea;">
+                                        {{ service.title|truncatewords:8 }}
+                                    </a>
+                                </h6>
+                                <p class="card-text text-muted small mb-2 flex-grow-1">{{ service.description|truncatewords:12 }}</p>
+                                
+                                <div class="mt-auto">
+                                    <div class="d-flex flex-wrap gap-2 mb-2 small text-muted">
+                                        <span class="badge bg-light text-dark">
+                                            <i class="bi bi-calendar me-1"></i>{{ service.created_at|date:"d.m.Y" }}
+                                        </span>
+                                        <span class="badge bg-light text-dark">
+                                            <i class="bi bi-tag me-1"></i>{{ service.category.name|truncatewords:2 }}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="mb-2 small text-muted">
+                                        <div class="mb-1">
+                                            <i class="bi bi-geo-alt me-1"></i>{{ service.get_location_type_display }}
+                                        </div>
+                                        {% if service.city %}
+                                        <div class="mb-1">
+                                            <i class="bi bi-geo me-1"></i>{{ service.city.name }}
+                                        </div>
+                                        {% endif %}
+                                        {% if service.price %}
+                                        <div class="text-primary fw-bold mt-1">
+                                            <i class="bi bi-currency-exchange me-1"></i>{{ service.price|floatformat:2 }} ₽ / {{ service.get_payment_period_display }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="small text-muted mb-2">
+                                        <i class="bi bi-eye me-1"></i>{{ service.views }} просмотров
+                                    </div>
+                                    
+                                    <a href="{% url 'services:service_detail' service.get_public_slug %}" class="btn btn-sm btn-primary w-100">
+                                        Подробнее
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if total_services > 6 %}
+                <div class="text-center mt-3">
+                    <a href="{% url 'services:service_list' %}?author={{ profile_user.username }}" class="btn btn-outline-primary">
+                        Показать все услуги ({{ total_services }})
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
         
         <!-- Отзывы -->
         {% if reviews %}

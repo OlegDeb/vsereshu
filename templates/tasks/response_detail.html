@@ -31,7 +31,7 @@
 <div class="row">
     <div class="col-lg-8">
         <!-- Информация о задаче -->
-        <div class="card mb-4">
+        <div class="card mb-4 shadow-sm">
             <div class="card-header">
                 <h3 class="h5 mb-0">Задача: {{ response.task.title }}</h3>
             </div>
@@ -41,70 +41,78 @@
         </div>
 
         <!-- Чат -->
-        <div class="card mb-4">
-            <div class="card-header">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h3 class="h5 mb-0">Сообщения</h3>
+                <span class="badge bg-primary" id="message-count">{{ message_list|length }}</span>
             </div>
-            <div class="card-body">
-                <!-- Исходное сообщение отклика -->
-                <div class="mb-3 d-flex {% if response.candidate == user %}flex-row-reverse{% else %}flex-row{% endif %} align-items-center">
-                    <div class="me-2 {% if response.candidate == user %}ms-2{% endif %}">
-                        {% if response.candidate.avatar %}
-                            <img src="{{ response.candidate.avatar.url }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
-                        {% else %}
-                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                <span class="text-white small">{{ response.candidate.username|first|upper }}</span>
-                            </div>
-                        {% endif %}
-                    </div>
-                    <div class="flex-grow-1" style="max-width: 70%;">
-                        <div class="d-inline-block {% if response.candidate == user %}message-own{% else %}message-other{% endif %} p-3 rounded w-100">
-                            <div class="mb-1">
-                                <strong>{{ response.candidate.get_full_name|default:response.candidate.username }}</strong>
-                                <small class="text-muted">
-                                    {{ response.created_at|date:"d.m.Y H:i" }}
-                                </small>
-                                <span class="badge bg-secondary ms-2">Исходное сообщение</span>
-                            </div>
-                            <div>{{ response.message|linebreaks }}</div>
+            <div class="card-body p-0">
+                <div id="messages-container" style="max-height: 500px; overflow-y: auto; padding: 20px;">
+                    <!-- Исходное сообщение отклика -->
+                    <div class="mb-3 d-flex {% if response.candidate == user %}flex-row-reverse{% else %}flex-row{% endif %} align-items-start">
+                        <div class="me-2 {% if response.candidate == user %}ms-2{% endif %}">
+                            {% if response.candidate.avatar %}
+                                <img src="{{ response.candidate.avatar.url }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
+                            {% else %}
+                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <span class="text-white small">{{ response.candidate.username|first|upper }}</span>
+                                </div>
+                            {% endif %}
                         </div>
-                    </div>
-                </div>
-                
-                {% if message_list %}
-                    {% for message in message_list %}
-                        <div class="mb-3 d-flex {% if message.sender == user %}flex-row-reverse{% else %}flex-row{% endif %} align-items-center">
-                            <div class="me-2 {% if message.sender == user %}ms-2{% endif %}">
-                                {% if message.sender.avatar %}
-                                    <img src="{{ message.sender.avatar.url }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
-                                {% else %}
-                                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                        <span class="text-white small">{{ message.sender.username|first|upper }}</span>
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <div class="flex-grow-1" style="max-width: 70%;">
-                                <div class="d-inline-block {% if message.sender == user %}message-own{% else %}message-other{% endif %} p-3 rounded w-100">
-                                    <div class="mb-1">
-                                        <strong>{{ message.sender.get_full_name|default:message.sender.username }}</strong>
-                                        <small class="text-muted">
-                                            {{ message.created_at|date:"d.m.Y H:i" }}
+                        <div class="flex-grow-1" style="max-width: 70%;">
+                            <div class="d-inline-block {% if response.candidate == user %}message-own{% else %}message-other{% endif %} p-3 rounded w-100">
+                                <div class="mb-1 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ response.candidate.get_full_name|default:response.candidate.username }}</strong>
+                                        <small class="text-muted ms-2">
+                                            {{ response.created_at|date:"d.m.Y H:i" }}
                                         </small>
                                     </div>
-                                    <div>{{ message.content|linebreaks }}</div>
+                                    <span class="badge bg-secondary">Исходное сообщение</span>
                                 </div>
+                                <div class="message-content">{{ response.message|linebreaks }}</div>
                             </div>
                         </div>
-                    {% endfor %}
-                {% endif %}
+                    </div>
+                    
+                    <!-- Сообщения -->
+                    <div id="messages-list">
+                        {% if message_list %}
+                            {% for message in message_list %}
+                                <div class="mb-3 d-flex {% if message.sender == user %}flex-row-reverse{% else %}flex-row{% endif %} align-items-start message-item" data-message-id="{{ message.id }}">
+                                    <div class="me-2 {% if message.sender == user %}ms-2{% endif %}">
+                                        {% if message.sender.avatar %}
+                                            <img src="{{ message.sender.avatar.url }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
+                                        {% else %}
+                                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <span class="text-white small">{{ message.sender.username|first|upper }}</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-grow-1" style="max-width: 70%;">
+                                        <div class="d-inline-block {% if message.sender == user %}message-own{% else %}message-other{% endif %} p-3 rounded w-100">
+                                            <div class="mb-1">
+                                                <strong>{{ message.sender.get_full_name|default:message.sender.username }}</strong>
+                                                <small class="text-muted ms-2">
+                                                    {{ message.created_at|date:"d.m.Y H:i" }}
+                                                </small>
+                                            </div>
+                                            <div class="message-content">{{ message.content|linebreaks }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Форма для отправки сообщения -->
-        <div class="card mb-4">
+        <div class="card mb-4 shadow-sm">
             <div class="card-body">
                 <h3 class="h5 mb-3">Отправить сообщение</h3>
-                <form method="post">
+                <form id="message-form" method="post">
                     {% csrf_token %}
                     <div class="mb-3">
                         {{ message_form.content.label_tag }}
@@ -113,7 +121,9 @@
                             <div class="text-danger small">{{ message_form.content.errors }}</div>
                         {% endif %}
                     </div>
-                    <button type="submit" class="btn btn-primary">Отправить</button>
+                    <button type="submit" class="btn btn-primary" id="send-button">
+                        <i class="bi bi-send me-1"></i>Отправить
+                    </button>
                 </form>
             </div>
         </div>
@@ -123,10 +133,32 @@
         <div class="card shadow-sm mb-3 sidebar-block-1">
             <div class="card-body">
                 <h3 class="h5 mb-3">Участники общения</h3>
-                <p class="mb-2"><strong>Автор задачи:</strong></p>
-                <p class="mb-3">{{ response.task.author.get_full_name|default:response.task.author.username }}</p>
-                <p class="mb-2"><strong>Кандидат:</strong></p>
-                <p class="mb-0">{{ response.candidate.get_full_name|default:response.candidate.username }}</p>
+                <div class="d-flex align-items-center mb-3">
+                    {% if response.task.author.avatar %}
+                        <img src="{{ response.task.author.avatar.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
+                    {% else %}
+                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                            <span class="text-white small">{{ response.task.author.username|first|upper }}</span>
+                        </div>
+                    {% endif %}
+                    <div>
+                        <strong>Автор задачи:</strong><br>
+                        <small>{{ response.task.author.get_full_name|default:response.task.author.username }}</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center">
+                    {% if response.candidate.avatar %}
+                        <img src="{{ response.candidate.avatar.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
+                    {% else %}
+                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                            <span class="text-white small">{{ response.candidate.username|first|upper }}</span>
+                        </div>
+                    {% endif %}
+                    <div>
+                        <strong>Кандидат:</strong><br>
+                        <small>{{ response.candidate.get_full_name|default:response.candidate.username }}</small>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -230,5 +262,167 @@
         </div>
     </div>
 </div>
-{% endblock %}
 
+<style>
+    .message-own {
+        background-color: #667eea;
+        color: white;
+        border-radius: 18px 18px 4px 18px;
+    }
+    
+    .message-other {
+        background-color: #f1f3f5;
+        color: #333;
+        border-radius: 18px 18px 18px 4px;
+    }
+    
+    .message-content {
+        word-wrap: break-word;
+    }
+    
+    #messages-container {
+        scroll-behavior: smooth;
+    }
+    
+    #messages-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    #messages-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    
+    #messages-container::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 3px;
+    }
+    
+    #messages-container::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const messageForm = document.getElementById('message-form');
+    const messagesList = document.getElementById('messages-list');
+    const messagesContainer = document.getElementById('messages-container');
+    const messageInput = document.getElementById('id_content');
+    const sendButton = document.getElementById('send-button');
+    const messageCount = document.getElementById('message-count');
+    const responseId = {{ response.id }};
+    const currentUser = '{{ user.username }}';
+    const currentUserFullName = '{{ user.get_full_name|default:user.username }}';
+    const currentUserAvatar = '{% if user.avatar %}{{ user.avatar.url }}{% endif %}';
+    const sendMessageUrl = '{% url "tasks:send_message" response_id=response.id %}';
+    
+    // Автоскролл вниз при загрузке
+    scrollToBottom();
+    
+    // Обработка отправки формы через AJAX
+    messageForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const content = messageInput.value.trim();
+        if (!content) {
+            return;
+        }
+        
+        // Отключаем кнопку отправки
+        sendButton.disabled = true;
+        sendButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Отправка...';
+        
+        // Отправляем AJAX запрос
+        fetch(sendMessageUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: new URLSearchParams({
+                'content': content
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Добавляем новое сообщение в список
+                addMessageToChat(data.message);
+                // Очищаем поле ввода
+                messageInput.value = '';
+                // Обновляем счетчик сообщений
+                updateMessageCount();
+                // Скроллим вниз
+                scrollToBottom();
+            } else {
+                alert('Ошибка при отправке сообщения: ' + (data.error || 'Неизвестная ошибка'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ошибка при отправке сообщения');
+        })
+        .finally(() => {
+            // Включаем кнопку отправки обратно
+            sendButton.disabled = false;
+            sendButton.innerHTML = '<i class="bi bi-send me-1"></i>Отправить';
+        });
+    });
+    
+    function addMessageToChat(messageData) {
+        const isOwnMessage = true; // Всегда true для только что отправленного сообщения
+        const senderName = messageData.sender_name || messageData.sender;
+        const senderAvatar = messageData.sender_avatar || '';
+        const avatarHtml = senderAvatar
+            ? `<img src="${senderAvatar}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">`
+            : `<div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;"><span class="text-white small">${messageData.sender.charAt(0).toUpperCase()}</span></div>`;
+        
+        // Экранируем HTML в содержимом сообщения
+        const content = messageData.content
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\n/g, '<br>');
+        
+        const messageHtml = `
+            <div class="mb-3 d-flex flex-row-reverse align-items-start message-item" data-message-id="${messageData.id}">
+                <div class="ms-2">
+                    ${avatarHtml}
+                </div>
+                <div class="flex-grow-1" style="max-width: 70%;">
+                    <div class="d-inline-block message-own p-3 rounded w-100">
+                        <div class="mb-1">
+                            <strong>${senderName}</strong>
+                            <small class="text-muted ms-2">
+                                ${messageData.created_at}
+                            </small>
+                        </div>
+                        <div class="message-content">${content}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        messagesList.insertAdjacentHTML('beforeend', messageHtml);
+    }
+    
+    function updateMessageCount() {
+        const count = document.querySelectorAll('.message-item').length;
+        messageCount.textContent = count;
+    }
+    
+    function scrollToBottom() {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // Автообновление сообщений каждые 5 секунд
+    setInterval(function() {
+        const lastMessageId = messagesList.querySelector('.message-item:last-child')?.dataset.messageId;
+        if (lastMessageId) {
+            // Здесь можно добавить проверку новых сообщений
+            // Пока оставляем как есть
+        }
+    }, 5000);
+});
+</script>
+{% endblock %}

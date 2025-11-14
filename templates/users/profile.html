@@ -90,6 +90,47 @@
             </div>
         </div>
         
+        <!-- Статистика услуг -->
+        {% if total_services > 0 %}
+        <div class="mt-4">
+            <h6 class="border-bottom pb-2">Статистика услуг</h6>
+            <div class="row">
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h3 class="text-primary">{{ total_services }}</h3>
+                            <p class="mb-0 small">Всего услуг</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h3 class="text-success">{{ moderated_services }}</h3>
+                            <p class="mb-0 small">Опубликовано</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h3 class="text-info">{{ total_services_views }}</h3>
+                            <p class="mb-0 small">Просмотров</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h3 class="text-warning">{{ total_services_orders }}</h3>
+                            <p class="mb-0 small">Заказов</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
         <!-- Отзывы -->
         {% if reviews %}
         <div class="mt-4">

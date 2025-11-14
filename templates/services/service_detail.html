@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}{{ service.title }}{% endblock %}
+
+{% block page_header %}
+<!-- Блок с градиентом и заголовком -->
+<div class="task-header-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 60px 0 40px 0; margin: -32px calc(-50vw + 50%) 40px calc(-50vw + 50%); width: 100vw; position: relative;">
+    <div class="container">
+        <div class="text-center text-white">
+            <h1 class="display-5 fw-bold mb-3">{{ service.title }}</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb justify-content-center mb-0" style="background-color: rgba(255, 255, 255, 0.2); border-radius: 0.375rem; padding: 0.75rem 1rem; display: inline-flex;">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'home' %}" class="text-white text-decoration-none">Главная</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'services:service_list' %}" class="text-white text-decoration-none">Услуги</a>
+                    </li>
+                    <li class="breadcrumb-item active text-white" aria-current="page">{{ service.title|truncatewords:5 }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Статус модерации для автора -->
+        {% if user.is_authenticated and user == service.author and not service.is_moderated %}
+            <div class="alert alert-warning mb-4">
+                <div>
+                    <i class="bi bi-clock-history me-2"></i>
+                    <strong>Услуга на модерации</strong>
+                    <p class="mb-0 mt-1">Ваша услуга отправлена на проверку модератором. После одобрения она появится в общем списке услуг.</p>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Описание услуги -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">Описание услуги</h2>
+                {% if user.is_authenticated and user == service.author %}
+                    <a href="{% url 'services:edit_service' service.get_public_slug %}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-pencil me-1"></i>Редактировать
+                    </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="service-description">
+                    {{ service.description|linebreaks }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Форма для отправки сообщения автору услуги -->
+        {% if user.is_authenticated and user != service.author and message_form %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h3 class="h5 mb-0">Написать автору услуги</h3>
+                </div>
+                <div class="card-body">
+                    <form id="service-message-form" method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            {{ message_form.content.label_tag }}
+                            {{ message_form.content }}
+                            {% if message_form.content.errors %}
+                                <div class="text-danger small">{{ message_form.content.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="send-service-message-button">
+                            <i class="bi bi-send me-1"></i>Отправить сообщение
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% elif user.is_authenticated and user == service.author %}
+            <!-- Кнопка для просмотра сообщений для автора -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <a href="{% url 'services:service_messages' service.get_public_slug %}" class="btn btn-primary w-100">
+                        <i class="bi bi-chat-dots me-1"></i>Просмотреть сообщения
+                    </a>
+                </div>
+            </div>
+        {% elif not user.is_authenticated %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <p class="mb-3">Для отправки сообщения автору услуги необходимо войти в систему.</p>
+                    <a href="{% url 'users:login' %}" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-in-right me-1"></i>Войти
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Кнопка назад -->
+        <div class="mb-4">
+            <a class="btn btn-secondary" href="{% url 'services:service_list' %}">
+                <i class="bi bi-arrow-left me-1"></i>Назад к списку
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <!-- Статус и дата -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h2 class="h5 mb-0">Статус услуги</h2>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    {% if not service.is_moderated %}
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-warning fs-6">
+                                <i class="bi bi-clock-history me-1"></i>На модерации
+                            </span>
+                        </div>
+                    {% else %}
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-success fs-6">
+                                <i class="bi bi-check-circle me-1"></i>Опубликована
+                            </span>
+                        </div>
+                    {% endif %}
+                    <div class="text-muted small">
+                        <i class="bi bi-eye me-1"></i>Просмотров: <strong>{{ service.views }}</strong>
+                    </div>
+                </div>
+                <hr class="my-3">
+                <div class="small text-muted">
+                    <div class="mb-2">
+                        <i class="bi bi-calendar me-1"></i><strong>Размещена:</strong> {{ service.created_at|date:"d E Y" }}
+                    </div>
+                    {% if service.updated_at != service.created_at %}
+                        <div class="mb-0">
+                            <i class="bi bi-pencil me-1"></i><strong>Обновлена:</strong> {{ service.updated_at|date:"d E Y" }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Подробности -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h2 class="h5 mb-0">Подробности</h2>
+            </div>
+            <div class="card-body">
+                <dl class="mb-0">
+                    <dt class="small text-muted">Категория</dt>
+                    <dd class="mb-3">{{ service.category.name }}</dd>
+
+                    <dt class="small text-muted">Место оказания услуги</dt>
+                    <dd class="mb-3">{{ service.get_location_type_display }}</dd>
+
+                    {% if service.city %}
+                        <dt class="small text-muted">Город</dt>
+                        <dd class="mb-3">{{ service.city.name }}</dd>
+                    {% endif %}
+
+                    {% if service.price %}
+                        <dt class="small text-muted">Стоимость услуги</dt>
+                        <dd class="mb-0">
+                            <strong class="text-primary">{{ service.price|floatformat:2 }} ₽</strong>
+                            <span class="text-muted">/ {{ service.get_payment_period_display }}</span>
+                        </dd>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+
+        <!-- Информация об авторе -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h2 class="h5 mb-0">Автор услуги</h2>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    {% if service.author.avatar %}
+                        <img src="{{ service.author.avatar.url }}" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;" alt="Аватар">
+                    {% else %}
+                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                            <span class="text-white">{{ service.author.username|first|upper }}</span>
+                        </div>
+                    {% endif %}
+                    <div>
+                        <h6 class="mb-0">{{ service.author.get_full_name|default:service.author.username }}</h6>
+                        <small class="text-muted">@{{ service.author.username }}</small>
+                    </div>
+                </div>
+                <a href="{% url 'users:public_profile' service.author.username %}" class="btn btn-outline-primary btn-sm w-100">
+                    <i class="bi bi-person me-1"></i>Посмотреть профиль
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+{% if user.is_authenticated and user != service.author and message_form %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const messageForm = document.getElementById('service-message-form');
+    const messageInput = document.getElementById('id_content');
+    const sendButton = document.getElementById('send-service-message-button');
+    const sendMessageUrl = '{% url "services:send_service_message" slug=service.get_public_slug %}';
+    
+    messageForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const content = messageInput.value.trim();
+        if (!content) {
+            return;
+        }
+        
+        // Отключаем кнопку отправки
+        sendButton.disabled = true;
+        sendButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Отправка...';
+        
+        // Отправляем AJAX запрос
+        fetch(sendMessageUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: new URLSearchParams({
+                'content': content
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Перенаправляем на страницу диалога
+                window.location.href = '{% url "services:service_messages" slug=service.get_public_slug %}';
+            } else {
+                alert('Ошибка при отправке сообщения: ' + (data.error || 'Неизвестная ошибка'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ошибка при отправке сообщения');
+        })
+        .finally(() => {
+            // Включаем кнопку отправки обратно
+            sendButton.disabled = false;
+            sendButton.innerHTML = '<i class="bi bi-send me-1"></i>Отправить сообщение';
+        });
+    });
+});
+</script>
+{% endif %}
+{% endblock %}

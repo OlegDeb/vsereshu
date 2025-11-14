@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}Общение по услуге{% endblock %}
+
+{% block page_header %}
+<!-- Блок с градиентом и заголовком -->
+<div class="task-header-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 60px 0 40px 0; margin: -32px calc(-50vw + 50%) 40px calc(-50vw + 50%); width: 100vw; position: relative;">
+    <div class="container">
+        <div class="text-center text-white">
+            <h1 class="display-5 fw-bold mb-3">Общение по услуге</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb justify-content-center mb-0" style="background-color: rgba(255, 255, 255, 0.2); border-radius: 0.375rem; padding: 0.75rem 1rem; display: inline-flex;">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'home' %}" class="text-white text-decoration-none">Главная</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'services:service_list' %}" class="text-white text-decoration-none">Услуги</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'services:service_detail' slug=service.get_public_slug %}" class="text-white text-decoration-none">{{ service.title|truncatewords:3 }}</a>
+                    </li>
+                    <li class="breadcrumb-item active text-white" aria-current="page">Общение</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Информация об услуге -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header">
+                <h3 class="h5 mb-0">Услуга: {{ service.title }}</h3>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">{{ service.description|truncatewords:50 }}</p>
+            </div>
+        </div>
+
+        <!-- Чат -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="h5 mb-0">Сообщения</h3>
+                <span class="badge bg-primary" id="message-count">{{ message_list|length }}</span>
+            </div>
+            <div class="card-body p-0">
+                <div id="messages-container" style="max-height: 500px; overflow-y: auto; padding: 20px;">
+                    <!-- Сообщения -->
+                    <div id="messages-list">
+                        {% if message_list %}
+                            {% for message in message_list %}
+                                <div class="mb-3 d-flex {% if message.sender == user %}flex-row-reverse{% else %}flex-row{% endif %} align-items-start message-item" data-message-id="{{ message.id }}">
+                                    <div class="me-2 {% if message.sender == user %}ms-2{% endif %}">
+                                        {% if message.sender.avatar %}
+                                            <img src="{{ message.sender.avatar.url }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
+                                        {% else %}
+                                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <span class="text-white small">{{ message.sender.username|first|upper }}</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-grow-1" style="max-width: 70%;">
+                                        <div class="d-inline-block {% if message.sender == user %}message-own{% else %}message-other{% endif %} p-3 rounded w-100">
+                                            <div class="mb-1">
+                                                <strong>{{ message.sender.get_full_name|default:message.sender.username }}</strong>
+                                                <small class="text-muted ms-2">
+                                                    {{ message.created_at|date:"d.m.Y H:i" }}
+                                                </small>
+                                            </div>
+                                            <div class="message-content">{{ message.content|linebreaks }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center text-muted py-4">
+                                <p>Пока нет сообщений. Начните общение!</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Форма для отправки сообщения -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+                <h3 class="h5 mb-3">Отправить сообщение</h3>
+                <form id="message-form" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        {{ message_form.content.label_tag }}
+                        {{ message_form.content }}
+                        {% if message_form.content.errors %}
+                            <div class="text-danger small">{{ message_form.content.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="send-button">
+                        <i class="bi bi-send me-1"></i>Отправить
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 sticky-sidebar">
+        <!-- Участники общения -->
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <h3 class="h5 mb-3">Участники общения</h3>
+                <div class="d-flex align-items-center mb-3">
+                    {% if service.author.avatar %}
+                        <img src="{{ service.author.avatar.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
+                    {% else %}
+                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                            <span class="text-white small">{{ service.author.username|first|upper }}</span>
+                        </div>
+                    {% endif %}
+                    <div>
+                        <strong>Автор услуги:</strong><br>
+                        <small>{{ service.author.get_full_name|default:service.author.username }}</small>
+                    </div>
+                </div>
+                {% if other_user %}
+                    <div class="d-flex align-items-center">
+                        {% if other_user.avatar %}
+                            <img src="{{ other_user.avatar.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
+                        {% else %}
+                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                <span class="text-white small">{{ other_user.username|first|upper }}</span>
+                            </div>
+                        {% endif %}
+                        <div>
+                            <strong>Заказчик:</strong><br>
+                            <small>{{ other_user.get_full_name|default:other_user.username }}</small>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <h3 class="h5">Информация</h3>
+                <p class="mb-2"><strong>Услуга:</strong></p>
+                <p class="mb-3"><a href="{% url 'services:service_detail' slug=service.get_public_slug %}">{{ service.title }}</a></p>
+                
+                <p class="mb-2"><strong>Дата размещения:</strong></p>
+                <p class="mb-0">{{ service.created_at|date:"d E Y в H:i" }}</p>
+            </div>
+        </div>
+        
+        <!-- Кнопка возврата к услуге -->
+        <div class="mt-3">
+            <a href="{% url 'services:service_detail' slug=service.get_public_slug %}" class="btn btn-primary w-100 d-flex align-items-center justify-content-center" style="padding: 12px; font-weight: 500; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <i class="bi bi-arrow-left me-2"></i>К услуге
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .message-own {
+        background-color: #667eea;
+        color: white;
+        border-radius: 18px 18px 4px 18px;
+    }
+    
+    .message-other {
+        background-color: #f1f3f5;
+        color: #333;
+        border-radius: 18px 18px 18px 4px;
+    }
+    
+    .message-content {
+        word-wrap: break-word;
+    }
+    
+    #messages-container {
+        scroll-behavior: smooth;
+    }
+    
+    #messages-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    #messages-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    
+    #messages-container::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 3px;
+    }
+    
+    #messages-container::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const messageForm = document.getElementById('message-form');
+    const messagesList = document.getElementById('messages-list');
+    const messagesContainer = document.getElementById('messages-container');
+    const messageInput = document.getElementById('id_content');
+    const sendButton = document.getElementById('send-button');
+    const messageCount = document.getElementById('message-count');
+    const serviceSlug = '{{ service.get_public_slug }}';
+    const currentUser = '{{ user.username }}';
+    const currentUserFullName = '{{ user.get_full_name|default:user.username }}';
+    const currentUserAvatar = '{% if user.avatar %}{{ user.avatar.url }}{% endif %}';
+    
+    // Автоскролл вниз при загрузке
+    scrollToBottom();
+    
+    // Обработка отправки формы
+    messageForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const content = messageInput.value.trim();
+        if (!content) {
+            return;
+        }
+        
+        // Отключаем кнопку отправки
+        sendButton.disabled = true;
+        sendButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Отправка...';
+        
+        // Отправляем форму обычным способом (POST)
+        messageForm.submit();
+    });
+    
+    function updateMessageCount() {
+        const count = document.querySelectorAll('.message-item').length;
+        messageCount.textContent = count;
+    }
+    
+    function scrollToBottom() {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+});
+</script>
+{% endblock %}
+

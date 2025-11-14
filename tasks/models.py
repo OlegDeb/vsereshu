@@ -87,6 +87,10 @@ class Task(models.Model):
         verbose_name="Комментарий модерации",
         help_text="Комментарий модератора по задаче",
     )
+    views = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Количество просмотров"
+    )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Создана")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Обновлена")
 
