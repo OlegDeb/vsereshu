@@ -4,52 +4,124 @@
 {% block title %}Главная страница{% endblock %}
 
 {% block content %}
-<div class="jumbotron bg-light p-5 rounded">
-    <h1 class="display-4">Добро пожаловать!</h1>
-    <p class="lead">Это главная страница вашего проекта.</p>
-    <hr class="my-4">
-    
-    {% if user.is_authenticated %}
-        <p>Рады видеть вас снова, <strong>{{ user.username }}</strong>!</p>
-        <div class="d-flex gap-2">
-            <a class="btn btn-primary btn-lg" href="{% url 'users:profile' %}" role="button">Перейти в профиль</a>
+<div class="task-header-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 100px 0 80px 0; margin: -32px calc(-50vw + 50%) 40px calc(-50vw + 50%); width: 100vw; position: relative;">
+    <div class="container px-5">
+        <div class="text-center text-white">
+            <h1 class="display-4">Поиск работы или исполнителя <br />в Крыму</h1>
+            <p class="lead">Найди онлайн подработку или найди лучшего исполнителя</p>
+            <hr class="my-4" style="border-color: rgba(255, 255, 255, 0.3);">
+            
+            {% if user.is_authenticated %}
+                <p>Рады видеть вас снова, <strong>{{ user.username }}</strong>!</p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <a class="btn btn-light btn-lg" href="{% url 'users:profile' %}" role="button">Перейти в профиль</a>
+                </div>
+            {% else %}
+                <p>Присоединяйтесь к нашему сообществу!</p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <a class="btn btn-light btn-lg" href="{% url 'users:login' %}" role="button">Войти</a>
+                    <a class="btn btn-outline-light btn-lg" href="{% url 'users:register' %}" role="button">Регистрация</a>
+                </div>
+            {% endif %}
         </div>
-    {% else %}
-        <p>Присоединяйтесь к нашему сообществу!</p>
-        <div class="d-flex gap-2">
-            <a class="btn btn-primary btn-lg" href="{% url 'users:login' %}" role="button">Войти</a>
-            <a class="btn btn-outline-primary btn-lg" href="{% url 'users:register' %}" role="button">Регистрация</a>
-        </div>
-    {% endif %}
+    </div>
 </div>
 
-<!-- Дополнительный контент главной страницы -->
-<div class="row mt-5">
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Функция 1</h5>
-                <p class="card-text">Описание первой функции вашего проекта.</p>
+<!-- Секция с категориями задач -->
+{% if sections_with_categories %}
+<section class="py-5 mt-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h2 class="display-5 fw-bold mb-3">Выберите категорию задания</h2>
+                <p class="lead text-muted">Мы готовы помочь вам в решении самых разнообразных задач</p>
             </div>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Функция 2</h5>
-                <p class="card-text">Описание второй функции вашего проекта.</p>
+        
+        <!-- Кнопки разделов -->
+        <div class="mb-5 d-flex flex-wrap gap-2">
+            {% for item in sections_with_categories %}
+            <button 
+                type="button" 
+                class="section-btn d-flex align-items-center text-decoration-none"
+                data-section-id="section-{{ item.section.id }}">
+                {% if item.section.icon %}
+                <div class="section-icon">
+                    <i class="{{ item.section.icon }}"></i>
+                </div>
+                {% endif %}
+                <span class="section-name">{{ item.section.name }}</span>
+            </button>
+            {% endfor %}
+        </div>
+        
+        <!-- Категории по разделам (скрыты по умолчанию) -->
+        {% for item in sections_with_categories %}
+        <div id="section-{{ item.section.id }}" class="categories-container" style="display: none;">
+            <div class="row g-3 mb-4">
+                {% for category in item.categories %}
+                <div class="col-6 col-md-4 col-lg-3">
+                    <a href="{% url 'tasks:task_list' %}?category={{ category.slug }}" class="text-decoration-none">
+                        <div class="card category-card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center p-4">
+                                <h5 class="card-title mb-0 fw-semibold">{{ category.name }}</h5>
+                                {% if category.short_description %}
+                                <p class="card-text text-muted small mt-2 mb-0">{{ category.short_description }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
             </div>
         </div>
+        {% endfor %}
     </div>
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Функция 3</h5>
-                <p class="card-text">Описание третьей функции вашего проекта.</p>
-            </div>
-        </div>
-    </div>
-</div>
+</section>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sectionButtons = document.querySelectorAll('.section-btn');
+        const categoryContainers = document.querySelectorAll('.categories-container');
+        
+        sectionButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                const sectionId = this.getAttribute('data-section-id');
+                const targetContainer = document.getElementById(sectionId);
+                
+                // Если контейнер уже открыт, закрываем его
+                if (targetContainer && targetContainer.style.display !== 'none') {
+                    targetContainer.style.display = 'none';
+                    this.classList.remove('active');
+                } else {
+                    // Закрываем все контейнеры
+                    categoryContainers.forEach(function(container) {
+                        container.style.display = 'none';
+                    });
+                    
+                    // Убираем активный класс со всех кнопок
+                    sectionButtons.forEach(function(btn) {
+                        btn.classList.remove('active');
+                    });
+                    
+                    // Открываем выбранный контейнер
+                    if (targetContainer) {
+                        targetContainer.style.display = 'block';
+                        this.classList.add('active');
+                        
+                        // Прокручиваем к категориям
+                        targetContainer.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'nearest' 
+                        });
+                    }
+                }
+            });
+        });
+    });
+</script>
+{% endif %}
 
 <section class="py-5 mt-5" style="background-color: #f8f9fa;">
     <div class="container">

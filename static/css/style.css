@@ -136,3 +136,173 @@ body {
     color: white !important;
     box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.5) !important;
 }
+
+/* Стили для кнопок разделов категорий */
+.section-btn {
+    background-color: #fff;
+    color: var(--bs-card-title-color);
+    padding: 8px 15px;
+    border: 1px solid var(--bs-border-color-translucent);
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-align: left;
+    position: relative;
+    display: flex;
+    min-width: 0;
+    word-wrap: break-word;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.section-btn::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.section-btn::after {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    right: -1px;
+    bottom: -1px;
+    background: #ffffff;
+    border-radius: 19px;
+    z-index: -1;
+}
+
+.section-btn:hover::before {
+    opacity: 1;
+}
+
+.section-btn:hover {
+    border-color: transparent;
+}
+
+.section-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+.section-icon i {
+    font-size: 1.25rem;
+}
+
+.section-name {
+    font-size: 1rem;
+    font-weight: 400;
+    flex-grow: 1;
+}
+
+.section-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: transparent;
+    color: #ffffff;
+}
+
+.section-btn.active .section-icon i,
+.section-btn.active .section-name {
+    color: #ffffff;
+}
+
+/* Стили для карточек категорий */
+.category-card {
+    background: #ffffff;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    border: 1px solid #e2e8f0;
+}
+
+.category-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+    border-color: #667eea;
+}
+
+.category-card:hover h5 {
+    color: #667eea;
+}
+
+.category-card .card-body {
+    padding: 1.5rem;
+}
+
+.category-card h5 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2d3748;
+    transition: color 0.3s ease;
+}
+
+.category-card .card-text {
+    font-size: 0.875rem;
+    color: #718096;
+}
+
+/* Контейнер категорий */
+.categories-container {
+    animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: 1rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .section-btn {
+        min-height: 120px;
+        padding: 1.5rem 1rem !important;
+    }
+    
+    .section-icon {
+        width: 56px;
+        height: 56px;
+    }
+    
+    .section-icon i {
+        font-size: 1.75rem;
+    }
+    
+    .section-name {
+        font-size: 0.9rem;
+    }
+}
+
+/* Цвет для заголовков на главной странице */
+h1, h2, h3, h4, h5, h6 {
+    color: #003366;
+}
+
+/* Исключение для заголовков в градиентном блоке */
+.task-header-gradient h1,
+.task-header-gradient h2,
+.task-header-gradient h3,
+.task-header-gradient h4,
+.task-header-gradient h5,
+.task-header-gradient h6 {
+    color: #ffffff;
+}
