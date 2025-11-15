@@ -107,7 +107,7 @@
     </div>
     <div class="col-lg-4 sticky-sidebar">
         <!-- Участники общения -->
-        <div class="card shadow-sm mb-3">
+        <div class="card shadow-sm mb-3 sidebar-block-1">
             <div class="card-body">
                 <h3 class="h5 mb-3">Участники общения</h3>
                 <div class="d-flex align-items-center mb-3">
@@ -137,11 +137,15 @@
                             <small>{{ other_user.get_full_name|default:other_user.username }}</small>
                         </div>
                     </div>
+                {% else %}
+                    <div class="text-muted small">
+                        <i class="bi bi-info-circle me-1"></i>Пока нет сообщений от заказчиков
+                    </div>
                 {% endif %}
             </div>
         </div>
         
-        <div class="card shadow-sm mb-3">
+        <div class="card shadow-sm mb-3 sidebar-block-2">
             <div class="card-body">
                 <h3 class="h5">Информация</h3>
                 <p class="mb-2"><strong>Услуга:</strong></p>
@@ -149,6 +153,22 @@
                 
                 <p class="mb-2"><strong>Дата размещения:</strong></p>
                 <p class="mb-0">{{ service.created_at|date:"d E Y в H:i" }}</p>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm mb-3 sidebar-block-3">
+            <div class="card-body">
+                <h3 class="h5 mb-3">Статус</h3>
+                <p class="mb-2"><strong>Статус услуги:</strong></p>
+                <p class="mb-0">
+                    <span class="badge {% if service.is_moderated %}bg-success{% else %}bg-warning{% endif %}">
+                        {% if service.is_moderated %}
+                            <i class="bi bi-check-circle me-1"></i>Опубликована
+                        {% else %}
+                            <i class="bi bi-clock-history me-1"></i>На модерации
+                        {% endif %}
+                    </span>
+                </p>
             </div>
         </div>
         

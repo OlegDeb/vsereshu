@@ -93,3 +93,174 @@ class CustomUser(AbstractUser):
     def get_reviews_count(self):
         """Возвращает количество полученных отзывов"""
         return self.reviews_received.count()
+    
+    def is_banned(self):
+        """Проверяет, забанен ли пользователь (временно или постоянно)"""
+        from django.utils import timezone
+        from django.db.models import Q
+        now = timezone.now()
+        # Проверяем активные баны
+        active_bans = self.bans.filter(
+            is_active=True
+        ).filter(
+            Q(ban_until__isnull=True) | Q(ban_until__gt=now)
+        )
+        return active_bans.exists()
+    
+    def get_active_ban(self):
+        """Возвращает активный бан пользователя, если есть"""
+        from django.utils import timezone
+        from django.db.models import Q
+        now = timezone.now()
+        return self.bans.filter(
+            is_active=True
+        ).filter(
+            Q(ban_until__isnull=True) | Q(ban_until__gt=now)
+        ).first()
+    
+    def get_warnings_count(self):
+        """Возвращает количество активных предупреждений"""
+        return self.warnings.filter(is_active=True).count()
+
+
+class UserWarning(models.Model):
+    """Предупреждение пользователю от администратора"""
+    user = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='warnings',
+        verbose_name="Пользователь"
+    )
+    admin = models.ForeignKey(
+        CustomUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='warnings_issued',
+        verbose_name="Администратор",
+        limit_choices_to={'is_staff': True}
+    )
+    reason = models.TextField(verbose_name="Причина предупреждения")
+    is_active = models.BooleanField(default=True, verbose_name="Активно")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    
+    class Meta:
+        verbose_name = "Предупреждение"
+        verbose_name_plural = "Предупреждения"
+        ordering = ('-created_at',)
+    
+    def __str__(self):
+        return f"Предупреждение для {self.user.username} от {self.created_at.strftime('%d.%m.%Y')}"
+
+
+class UserBan(models.Model):
+    """Бан пользователя (временный или постоянный)"""
+    user = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='bans',
+        verbose_name="Пользователь"
+    )
+    admin = models.ForeignKey(
+        CustomUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='bans_issued',
+        verbose_name="Администратор",
+        limit_choices_to={'is_staff': True}
+    )
+    reason = models.TextField(verbose_name="Причина бана")
+    ban_until = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Бан до",
+        help_text="Оставьте пустым для постоянного бана"
+    )
+    is_active = models.BooleanField(default=True, verbose_name="Активен")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    
+    class Meta:
+        verbose_name = "Бан"
+        verbose_name_plural = "Баны"
+        ordering = ('-created_at',)
+    
+    def __str__(self):
+        if self.ban_until:
+            return f"Временный бан для {self.user.username} до {self.ban_until.strftime('%d.%m.%Y %H:%M')}"
+        return f"Постоянный бан для {self.user.username}"
+    
+    @property
+    def is_permanent(self):
+        """Проверяет, является ли бан постоянным"""
+        return self.ban_until is None
+    
+    def is_expired(self):
+        """Проверяет, истек ли временный бан"""
+        if self.is_permanent:
+            return False
+        from django.utils import timezone
+        return timezone.now() > self.ban_until
+
+
+class UserComplaint(models.Model):
+    """Жалоба пользователя на другого пользователя"""
+    class ComplaintType(models.TextChoices):
+        SPAM = "spam", "Спам"
+        INAPPROPRIATE_BEHAVIOR = "inappropriate", "Непристойное поведение"
+        FRAUD = "fraud", "Мошенничество"
+        OTHER = "other", "Другое"
+    
+    class Status(models.TextChoices):
+        PENDING = "pending", "На рассмотрении"
+        REVIEWED = "reviewed", "Рассмотрена"
+        RESOLVED = "resolved", "Решена"
+        REJECTED = "rejected", "Отклонена"
+    
+    complainant = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='complaints_filed',
+        verbose_name="Подавший жалобу"
+    )
+    reported_user = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='complaints_received',
+        verbose_name="На кого пожаловались"
+    )
+    complaint_type = models.CharField(
+        max_length=20,
+        choices=ComplaintType.choices,
+        verbose_name="Тип жалобы"
+    )
+    description = models.TextField(verbose_name="Описание проблемы")
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+        verbose_name="Статус"
+    )
+    admin_comment = models.TextField(
+        blank=True,
+        verbose_name="Комментарий администратора"
+    )
+    admin = models.ForeignKey(
+        CustomUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='complaints_processed',
+        verbose_name="Обработавший администратор",
+        limit_choices_to={'is_staff': True}
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
+    
+    class Meta:
+        verbose_name = "Жалоба"
+        verbose_name_plural = "Жалобы"
+        ordering = ('-created_at',)
+        # Убрали unique_together с created_at, так как это может вызвать проблемы
+        # Можно добавить ограничение на уровне базы данных, если нужно предотвратить дубликаты
+    
+    def __str__(self):
+        return f"Жалоба от {self.complainant.username} на {self.reported_user.username} ({self.get_complaint_type_display()})"

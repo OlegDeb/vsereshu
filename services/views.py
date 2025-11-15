@@ -304,9 +304,15 @@ def service_messages(request, slug: str):
     
     # Определяем собеседника
     if request.user == service.author:
-        # Если текущий пользователь - автор, показываем сообщения от всех, кто писал
-        # Для простоты показываем все сообщения
-        other_user = None
+        # Если текущий пользователь - автор, находим последнего отправителя сообщений (кроме автора)
+        last_message = ServiceMessage.objects.filter(
+            service=service
+        ).exclude(sender=service.author).order_by('-created_at').first()
+        if last_message:
+            other_user = last_message.sender
+        else:
+            # Если нет сообщений от других пользователей, other_user будет None
+            other_user = None
     else:
         # Если текущий пользователь - не автор, собеседник - автор
         other_user = service.author

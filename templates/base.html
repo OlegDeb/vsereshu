@@ -60,6 +60,11 @@
                                     ➕ Создать задачу
                                 </a>
                             </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'services:create_service' %}">
+                                    ➕ Создать услугу
+                                </a>
+                            </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <a class="dropdown-item" href="{% url 'users:profile' %}">
@@ -71,6 +76,14 @@
                                     ✏️ Редактировать профиль
                                 </a>
                             </li>
+                            {% if user.is_staff %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-warning" href="{% url 'users:moderation_panel' %}">
+                                    🛡️ Панель модерации
+                                </a>
+                            </li>
+                            {% endif %}
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <a class="dropdown-item text-danger" href="{% url 'users:logout' %}">

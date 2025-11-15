@@ -13,7 +13,7 @@ class Service(models.Model):
         SELF = "self", "У себя"
 
     class PaymentPeriod(models.TextChoices):
-        FIXED = "fixed", "Под ключ"
+        FIXED = "fixed", "За услугу"
         HOUR = "hour", "За час"
         DAY = "day", "За день"
         MONTH = "month", "За месяц"

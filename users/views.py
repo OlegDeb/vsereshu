@@ -2,12 +2,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from django.contrib.auth import logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.utils import timezone
 from django.db import models
-from .forms import CustomUserCreationForm, CustomUserChangeForm
-from .models import CustomUser
+from django.core.paginator import Paginator
+from .forms import CustomUserCreationForm, CustomUserChangeForm, ComplaintForm, WarningForm, BanForm
+from .models import CustomUser, UserComplaint, UserWarning, UserBan
 from tasks.models import Task, TaskResponse
 from services.models import Service
 
@@ -280,3 +281,169 @@ def public_profile(request, username):
 def custom_logout(request):
     logout(request)
     return redirect('home')
+
+
+@login_required
+def file_complaint(request, user_id=None):
+    """Подача жалобы на пользователя"""
+    reported_user = None
+    if user_id:
+        reported_user = get_object_or_404(CustomUser, id=user_id)
+    
+    if request.method == 'POST':
+        form = ComplaintForm(request.POST, user=request.user)
+        if form.is_valid():
+            complaint = form.save(commit=False)
+            complaint.complainant = request.user
+            if reported_user:
+                complaint.reported_user = reported_user
+            complaint.save()
+            messages.success(request, 'Жалоба успешно отправлена. Мы рассмотрим её в ближайшее время.')
+            return redirect('users:profile')
+    else:
+        form = ComplaintForm(user=request.user)
+        if reported_user:
+            form.fields['reported_user'].initial = reported_user
+    
+    context = {
+        'form': form,
+        'reported_user': reported_user,
+    }
+    return render(request, 'users/file_complaint.html', context)
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def moderation_panel(request):
+    """Панель модерации для администраторов"""
+    # Получаем жалобы
+    complaints = UserComplaint.objects.all().select_related(
+        'complainant', 'reported_user', 'admin'
+    ).order_by('-created_at')
+    
+    # Фильтрация по статусу
+    status_filter = request.GET.get('status', 'all')
+    if status_filter != 'all':
+        complaints = complaints.filter(status=status_filter)
+    
+    # Пагинация
+    paginator = Paginator(complaints, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Статистика
+    stats = {
+        'pending': UserComplaint.objects.filter(status=UserComplaint.Status.PENDING).count(),
+        'reviewed': UserComplaint.objects.filter(status=UserComplaint.Status.REVIEWED).count(),
+        'resolved': UserComplaint.objects.filter(status=UserComplaint.Status.RESOLVED).count(),
+        'rejected': UserComplaint.objects.filter(status=UserComplaint.Status.REJECTED).count(),
+        'total': UserComplaint.objects.count(),
+    }
+    
+    context = {
+        'page_obj': page_obj,
+        'stats': stats,
+        'status_filter': status_filter,
+    }
+    return render(request, 'users/moderation_panel.html', context)
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def complaint_detail(request, complaint_id):
+    """Детальная информация о жалобе"""
+    complaint = get_object_or_404(UserComplaint, id=complaint_id)
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        admin_comment = request.POST.get('admin_comment', '')
+        
+        if action == 'review':
+            complaint.status = UserComplaint.Status.REVIEWED
+            complaint.admin = request.user
+            if admin_comment:
+                complaint.admin_comment = admin_comment
+            complaint.save()
+            messages.success(request, 'Жалоба помечена как рассмотренная.')
+        elif action == 'resolve':
+            complaint.status = UserComplaint.Status.RESOLVED
+            complaint.admin = request.user
+            if admin_comment:
+                complaint.admin_comment = admin_comment
+            complaint.save()
+            messages.success(request, 'Жалоба помечена как решенная.')
+        elif action == 'reject':
+            complaint.status = UserComplaint.Status.REJECTED
+            complaint.admin = request.user
+            if admin_comment:
+                complaint.admin_comment = admin_comment
+            complaint.save()
+            messages.success(request, 'Жалоба отклонена.')
+        
+        return redirect('users:complaint_detail', complaint_id=complaint.id)
+    
+    context = {
+        'complaint': complaint,
+    }
+    return render(request, 'users/complaint_detail.html', context)
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def issue_warning(request, user_id=None):
+    """Выдача предупреждения пользователю"""
+    user = None
+    if user_id:
+        user = get_object_or_404(CustomUser, id=user_id)
+    
+    if request.method == 'POST':
+        form = WarningForm(request.POST)
+        if form.is_valid():
+            warning = form.save(commit=False)
+            warning.admin = request.user
+            if user:
+                warning.user = user
+            warning.save()
+            messages.success(request, f'Предупреждение выдано пользователю {warning.user.username}.')
+            return redirect('users:moderation_panel')
+    else:
+        form = WarningForm()
+        if user:
+            form.fields['user'].initial = user
+    
+    context = {
+        'form': form,
+        'user': user,
+    }
+    return render(request, 'users/issue_warning.html', context)
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def issue_ban(request, user_id=None):
+    """Выдача бана пользователю"""
+    user = None
+    if user_id:
+        user = get_object_or_404(CustomUser, id=user_id)
+    
+    if request.method == 'POST':
+        form = BanForm(request.POST)
+        if form.is_valid():
+            ban = form.save(commit=False)
+            ban.admin = request.user
+            if user:
+                ban.user = user
+            ban.save()
+            ban_type = 'постоянный' if ban.is_permanent else 'временный'
+            messages.success(request, f'{ban_type.capitalize()} бан выдан пользователю {ban.user.username}.')
+            return redirect('users:moderation_panel')
+    else:
+        form = BanForm()
+        if user:
+            form.fields['user'].initial = user
+    
+    context = {
+        'form': form,
+        'user': user,
+    }
+    return render(request, 'users/issue_ban.html', context)

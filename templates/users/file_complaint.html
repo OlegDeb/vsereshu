@@ -1,0 +1,54 @@
+{% extends 'base_profile.html' %}
+{% load crispy_forms_tags %}
+
+{% block profile_page_header %}
+<!-- Блок с градиентом и заголовком -->
+<div class="task-header-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 60px 0 40px 0; margin: -32px calc(-50vw + 50%) 40px calc(-50vw + 50%); width: 100vw; position: relative;">
+    <div class="container">
+        <div class="text-center text-white">
+            <h1 class="display-5 fw-bold mb-3">Подача жалобы</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb justify-content-center mb-0" style="background-color: rgba(255, 255, 255, 0.2); border-radius: 0.375rem; padding: 0.75rem 1rem; display: inline-flex;">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'home' %}" class="text-white text-decoration-none">Главная</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'users:profile' %}" class="text-white text-decoration-none">Профиль</a>
+                    </li>
+                    <li class="breadcrumb-item active text-white" aria-current="page">Подача жалобы</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block profile_content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Подать жалобу на пользователя</h5>
+    </div>
+    <div class="card-body">
+        {% if reported_user %}
+        <div class="alert alert-info">
+            <strong>Жалоба на:</strong> {{ reported_user.get_full_name|default:reported_user.username }} (@{{ reported_user.username }})
+        </div>
+        {% endif %}
+        
+        <form method="POST">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Отправить жалобу</button>
+                <a href="{% url 'users:profile' %}" class="btn btn-secondary">Отмена</a>
+            </div>
+        </form>
+        
+        <div class="alert alert-warning mt-3">
+            <strong>Важно:</strong> Пожалуйста, предоставьте максимально подробную информацию о проблеме. 
+            Это поможет нам быстрее разобраться в ситуации и принять правильное решение.
+        </div>
+    </div>
+</div>
+{% endblock %}
+
