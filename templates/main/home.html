@@ -45,11 +45,11 @@
                 type="button" 
                 class="section-btn d-flex align-items-center text-decoration-none"
                 data-section-id="section-{{ item.section.id }}">
-                {% if item.section.icon %}
                 <div class="section-icon">
+                    {% if item.section.icon %}
                     <i class="{{ item.section.icon }}"></i>
+                    {% endif %}
                 </div>
-                {% endif %}
                 <span class="section-name">{{ item.section.name }}</span>
             </button>
             {% endfor %}
@@ -57,28 +57,20 @@
         
         <!-- Категории по разделам (скрыты по умолчанию) -->
         {% for item in sections_with_categories %}
-        <div id="section-{{ item.section.id }}" class="categories-container" style="display: none;">
-            <div class="row g-3 mb-4">
+        <div id="section-{{ item.section.id }}" class="categories-container mb-5" style="display: none;">
+            <ul class="category-list">
                 {% for category in item.categories %}
-                <div class="col-6 col-md-4 col-lg-3">
-                    <a href="{% url 'tasks:task_list' %}?category={{ category.slug }}" class="text-decoration-none">
-                        <div class="card category-card h-100 border-0 shadow-sm">
-                            <div class="card-body text-center p-4">
-                                <h5 class="card-title mb-0 fw-semibold">{{ category.name }}</h5>
-                                {% if category.short_description %}
-                                <p class="card-text text-muted small mt-2 mb-0">{{ category.short_description }}</p>
-                                {% endif %}
-                            </div>
-                        </div>
+                <li>
+                    <a href="{% url 'tasks:task_list' %}?category={{ category.slug }}" class="category-link">
+                        {{ category.name }}
                     </a>
-                </div>
+                </li>
                 {% endfor %}
-            </div>
+            </ul>
         </div>
         {% endfor %}
     </div>
 </section>
-
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
