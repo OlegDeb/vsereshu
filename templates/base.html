@@ -13,14 +13,182 @@
     <!-- Фиксированное верхнее меню -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
         <div class="container">
-            <!-- Логотип слева -->
-            <a class="navbar-brand me-4" href="{% url 'home' %}">
-                <img src="{% static 'img/logo/logo.png' %}" alt="ВСЁ-РЕШУ" class="navbar-logo">
-            </a>
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <!-- Логотип слева -->
+                <a class="navbar-brand" href="{% url 'home' %}">
+                    <img src="{% static 'img/logo/logo.png' %}" alt="ВСЁ-РЕШУ" class="navbar-logo">
+                </a>
+                
+                <!-- Меню по центру (десктоп) / Бургер по центру (мобильные) -->
+                <div class="d-flex align-items-center navbar-center">
+                    <!-- Основное меню для десктопа -->
+                    <div class="d-none d-lg-flex">
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">Главная</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.resolver_match.namespace == 'tasks' %}active{% endif %}" href="{% url 'tasks:task_list' %}">Задачи</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.resolver_match.namespace == 'services' %}active{% endif %}" href="{% url 'services:service_list' %}">Услуги</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.resolver_match.namespace == 'pages' %}active{% endif %}" href="{% url 'pages:page_list' %}">Информация</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.resolver_match.namespace == 'articles' %}active{% endif %}" href="{% url 'articles:article_list' %}">Статьи</a>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Бургер-меню для мобильных -->
+                    <button class="navbar-toggler d-lg-none ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation" style="border: none; padding: 0.5rem;">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                </div>
+                
+                <!-- Блок с иконками справа -->
+                <div class="d-flex align-items-center gap-2">
+                    {% if user.is_authenticated %}
+                        <!-- Иконка сообщений со счетчиком -->
+                        <div class="nav-item dropdown">
+                            <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="padding: 0.5rem 0.75rem;">
+                                <i class="bi bi-envelope fs-5"></i>
+                                {% if unread_messages_count > 0 %}
+                                    <span class="position-absolute badge rounded-pill bg-danger" id="messages-badge" style="top: 2px; right: -5px;">
+                                        {{ unread_messages_count }}
+                                        {% if unread_messages_count > 99 %}
+                                            <span class="visually-hidden">99+</span>
+                                        {% endif %}
+                                    </span>
+                                {% endif %}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end messages-dropdown" style="min-width: 320px; max-height: 500px; overflow-y: auto;">
+                                <li>
+                                    <h6 class="dropdown-header d-flex justify-content-between align-items-center">
+                                        <span>Сообщения</span>
+                                        {% if unread_messages_count > 0 %}
+                                            <span class="badge bg-danger rounded-pill">{{ unread_messages_count }}</span>
+                                        {% endif %}
+                                    </h6>
+                                </li>
+                                {% if unread_messages_list %}
+                                    {% for msg_info in unread_messages_list %}
+                                        <li>
+                                            <a class="dropdown-item messages-dropdown-item" href="{{ msg_info.url }}">
+                                                <div class="d-flex align-items-start">
+                                                    <div class="flex-shrink-0 me-2">
+                                                        {% if msg_info.other_user.avatar %}
+                                                            <img src="{{ msg_info.other_user.avatar.url }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" alt="{{ msg_info.other_user.username }}">
+                                                        {% else %}
+                                                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                                <span class="text-white small">{{ msg_info.other_user.username|first|upper }}</span>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="d-flex justify-content-between align-items-start mb-1">
+                                                            <strong class="text-truncate" style="max-width: 150px;">{{ msg_info.other_user.get_full_name|default:msg_info.other_user.username }}</strong>
+                                                            {% if msg_info.unread_count > 1 %}
+                                                                <span class="badge bg-danger rounded-pill ms-2">{{ msg_info.unread_count }}</span>
+                                                            {% endif %}
+                                                        </div>
+                                                        <div class="text-muted small mb-1">
+                                                            {% if msg_info.type == 'task' %}
+                                                                <i class="bi bi-check2-square me-1"></i>{{ msg_info.task.title|truncatewords:8 }}
+                                                            {% else %}
+                                                                <i class="bi bi-briefcase me-1"></i>{{ msg_info.service.title|truncatewords:8 }}
+                                                            {% endif %}
+                                                        </div>
+                                                        <div class="text-muted small text-truncate" style="max-width: 200px;">
+                                                            {{ msg_info.last_message.content|truncatewords:10 }}
+                                                        </div>
+                                                        <div class="text-muted small mt-1">
+                                                            {{ msg_info.last_message.created_at|timesince }} назад
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        {% if not forloop.last %}
+                                            <li><hr class="dropdown-divider my-1"></li>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    <li>
+                                        <a class="dropdown-item text-center text-muted py-3">
+                                            <i class="bi bi-inbox fs-4 d-block mb-2"></i>
+                                            <small>Нет новых сообщений</small>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        
+                        <!-- Выпадающее меню пользователя -->
+                        <div class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" style="padding: 0.5rem 1rem;">
+                                {% if user.avatar %}
+                                    <img src="{{ user.avatar.url }}" class="navbar-avatar rounded-circle me-1 me-md-2" alt="Аватар">
+                                {% else %}
+                                    <div class="navbar-avatar rounded-circle bg-secondary d-flex align-items-center justify-content-center me-1 me-md-2">
+                                        <span class="text-white small">{{ user.username|first|upper }}</span>
+                                    </div>
+                                {% endif %}
+                                <span class="d-none d-md-inline">Привет, {{ user.username }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'tasks:create_task' %}">
+                                        ➕ Создать задачу
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'services:create_service' %}">
+                                        ➕ Создать услугу
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'users:profile' %}">
+                                        👤 Мой профиль
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'users:profile_edit' %}">
+                                        ✏️ Редактировать профиль
+                                    </a>
+                                </li>
+                                {% if user.is_staff %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-warning" href="{% url 'users:moderation_panel' %}">
+                                        🛡️ Панель модерации
+                                    </a>
+                                </li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="{% url 'users:logout' %}">
+                                        🚪 Выйти
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <!-- Меню для неавторизованных пользователей -->
+                        <div class="d-flex align-items-center">
+                            <a class="nav-link" href="{% url 'users:login' %}">Вход</a>
+                            <a class="nav-link" href="{% url 'users:register' %}">Регистрация</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
             
-            <!-- Основное меню по центру -->
-            <div class="navbar-collapse collapse justify-content-center">
-                <ul class="navbar-nav">
+            <!-- Мобильное меню (открывается по клику на бургер) -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav d-lg-none">
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">Главная</a>
                     </li>
@@ -37,68 +205,6 @@
                         <a class="nav-link {% if request.resolver_match.namespace == 'articles' %}active{% endif %}" href="{% url 'articles:article_list' %}">Статьи</a>
                     </li>
                 </ul>
-            </div>
-            
-            <!-- Блок пользователя справа -->
-            <div class="navbar-nav ms-auto">
-                {% if user.is_authenticated %}
-                    <!-- Выпадающее меню пользователя -->
-                    <div class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
-                            {% if user.avatar %}
-                                <img src="{{ user.avatar.url }}" class="navbar-avatar rounded-circle me-2" alt="Аватар">
-                            {% else %}
-                                <div class="navbar-avatar rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2">
-                                    <span class="text-white small">{{ user.username|first|upper }}</span>
-                                </div>
-                            {% endif %}
-                            <span>Привет, {{ user.username }}</span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <a class="dropdown-item" href="{% url 'tasks:create_task' %}">
-                                    ➕ Создать задачу
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'services:create_service' %}">
-                                    ➕ Создать услугу
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'users:profile' %}">
-                                    👤 Мой профиль
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'users:profile_edit' %}">
-                                    ✏️ Редактировать профиль
-                                </a>
-                            </li>
-                            {% if user.is_staff %}
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item text-warning" href="{% url 'users:moderation_panel' %}">
-                                    🛡️ Панель модерации
-                                </a>
-                            </li>
-                            {% endif %}
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item text-danger" href="{% url 'users:logout' %}">
-                                    🚪 Выйти
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                {% else %}
-                    <!-- Меню для неавторизованных пользователей -->
-                    <div class="d-flex">
-                        <a class="nav-link" href="{% url 'users:login' %}">Вход</a>
-                        <a class="nav-link" href="{% url 'users:register' %}">Регистрация</a>
-                    </div>
-                {% endif %}
             </div>
         </div>
     </nav>
@@ -121,6 +227,88 @@
         {% block content %}
         {% endblock %}
     </div>
+
+    <!-- Футер -->
+    <footer class="bg-light mt-5 pt-5 pb-3">
+        <div class="container">
+            <div class="row mb-4">
+                <!-- Блок с городами -->
+                {% if footer_cities %}
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5 class="fw-bold mb-3" style="color: #003366;">Города</h5>
+                    <ul class="list-unstyled">
+                        {% for city in footer_cities %}
+                        <li class="mb-2">
+                            <a href="{% url 'tasks:task_list' %}?city={{ city.id }}" class="text-decoration-none text-muted">
+                                <i class="bi bi-geo-alt me-2"></i>{{ city.name }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% if footer_cities|length >= 10 %}
+                    <a href="{% url 'tasks:task_list' %}" class="text-decoration-none text-primary small">
+                        Все города <i class="bi bi-arrow-right"></i>
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <!-- Блок с разделами -->
+                {% if footer_sections %}
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5 class="fw-bold mb-3" style="color: #003366;">Разделы</h5>
+                    <ul class="list-unstyled">
+                        {% for section in footer_sections %}
+                        <li class="mb-2">
+                            <div class="d-flex align-items-center">
+                                {% if section.icon %}
+                                <i class="{{ section.icon }} me-2 text-primary"></i>
+                                {% endif %}
+                                <a href="{% url 'tasks:task_list' %}?section={{ section.slug }}" class="text-decoration-none text-muted">
+                                    <strong>{{ section.name }}</strong>
+                                </a>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                
+                <!-- Блок с последними статьями -->
+                {% if footer_articles %}
+                <div class="col-md-4">
+                    <h5 class="fw-bold mb-3" style="color: #003366;">Последние статьи</h5>
+                    <ul class="list-unstyled">
+                        {% for article in footer_articles %}
+                        <li class="mb-2">
+                            <a href="{% url 'articles:article_detail' article.slug %}" class="text-decoration-none">
+                                <span class="text-muted">{{ article.title|truncatewords:10 }}</span>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <a href="{% url 'articles:article_list' %}" class="text-decoration-none text-primary small">
+                        Все статьи <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Нижняя часть футера -->
+            <hr class="my-4">
+            <div class="row align-items-center">
+                <div class="col-md-6 mb-2 mb-md-0">
+                    <p class="text-muted small mb-0">
+                        &copy; {% now "Y" %} ВСЁ-РЕШУ. Все права защищены.
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="/info/politika-konfidencialnosti/" class="text-decoration-none text-muted small me-3">Политика конфиденциальности</a>
+                    <a href="/info/publichnaya-oferta/" class="text-decoration-none text-muted small">Публичная оферта</a>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

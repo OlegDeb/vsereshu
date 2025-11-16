@@ -56,37 +56,98 @@
             </div>
         </div>
 
-        <!-- Форма для отправки сообщения автору услуги -->
-        {% if user.is_authenticated and user != service.author and message_form %}
-            <div class="card shadow-sm mb-4">
-                <div class="card-header">
-                    <h3 class="h5 mb-0">Написать автору услуги</h3>
+        <!-- Кнопка открыть диалог или форма для отправки сообщения автору услуги -->
+        {% if user.is_authenticated and user != service.author %}
+            {% if user_messages %}
+                <!-- Показываем кнопку, если есть переписка -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body text-center">
+                        <h3 class="h5 mb-3">У вас уже есть переписка с автором услуги</h3>
+                        <a href="{% url 'services:service_messages' service.get_public_slug %}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-chat-dots me-1"></i>Открыть диалог
+                        </a>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <form id="service-message-form" method="post">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            {{ message_form.content.label_tag }}
-                            {{ message_form.content }}
-                            {% if message_form.content.errors %}
-                                <div class="text-danger small">{{ message_form.content.errors }}</div>
-                            {% endif %}
-                        </div>
-                        <button type="submit" class="btn btn-primary" id="send-service-message-button">
-                            <i class="bi bi-send me-1"></i>Отправить сообщение
-                        </button>
-                    </form>
+            {% elif message_form %}
+                <!-- Показываем форму, если переписки нет -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h3 class="h5 mb-0">Написать автору услуги</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="service-message-form" method="post">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                {{ message_form.content.label_tag }}
+                                {{ message_form.content }}
+                                {% if message_form.content.errors %}
+                                    <div class="text-danger small">{{ message_form.content.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <button type="submit" class="btn btn-primary" id="send-service-message-button">
+                                <i class="bi bi-send me-1"></i>Отправить сообщение
+                            </button>
+                        </form>
+                    </div>
                 </div>
-            </div>
+            {% endif %}
         {% elif user.is_authenticated and user == service.author %}
-            <!-- Кнопка для просмотра сообщений для автора -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <a href="{% url 'services:service_messages' service.get_public_slug %}" class="btn btn-primary w-100">
-                        <i class="bi bi-chat-dots me-1"></i>Просмотреть сообщения
-                    </a>
+            <!-- Список диалогов для автора услуги -->
+            {% if conversations %}
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h3 class="h5 mb-0">Диалоги по услуге{% if conversations %} ({{ conversations|length }}){% endif %}</h3>
+                    </div>
+                    <div class="card-body">
+                        {% for conversation_user in conversations %}
+                            <a href="{% url 'services:service_messages' service.get_public_slug %}?user_id={{ conversation_user.id }}" class="text-decoration-none">
+                                <div class="card mb-3 border conversation-card" style="transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: pointer;">
+                                    <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="d-flex align-items-center">
+                                            {% if conversation_user.avatar %}
+                                                <img src="{{ conversation_user.avatar.url }}" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;" alt="Аватар">
+                                            {% else %}
+                                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                                    <span class="text-white">{{ conversation_user.username|first|upper }}</span>
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <h5 class="mb-1">{{ conversation_user.get_full_name|default:conversation_user.username }}</h5>
+                                                <small class="text-muted">@{{ conversation_user.username }}</small>
+                                            </div>
+                                        </div>
+                                        {% if conversation_user.unread_count > 0 %}
+                                            <span class="badge bg-danger">{{ conversation_user.unread_count }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock me-1"></i>
+                                            {% if conversation_user.last_message_time %}
+                                                Последнее сообщение: {{ conversation_user.last_message_time|date:"d.m.Y H:i" }}
+                                            {% else %}
+                                                Нет сообщений
+                                            {% endif %}
+                                        </small>
+                                        <a href="{% url 'services:service_messages' service.get_public_slug %}?user_id={{ conversation_user.id }}" class="text-decoration-none">
+                                            <i class="bi bi-arrow-right"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            </a>
+                        {% endfor %}
+                    </div>
                 </div>
-            </div>
+            {% else %}
+                <!-- Нет диалогов -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <p class="mb-3 text-muted">Пока нет сообщений по этой услуге.</p>
+                    </div>
+                </div>
+            {% endif %}
         {% elif not user.is_authenticated %}
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
@@ -254,4 +315,11 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endif %}
+
+<style>
+    .conversation-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    }
+</style>
 {% endblock %}

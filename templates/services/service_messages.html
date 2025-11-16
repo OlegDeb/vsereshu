@@ -40,20 +40,76 @@
             </div>
         </div>
 
-        <!-- Чат -->
-        <div class="card mb-4 shadow-sm">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h3 class="h5 mb-0">Сообщения</h3>
-                <span class="badge bg-primary" id="message-count">{{ message_list|length }}</span>
+        <!-- Кнопка возврата к списку диалогов (если открыт конкретный диалог) -->
+        {% if user.is_authenticated and user == service.author and conversation_user %}
+            <div class="mb-3">
+                <a href="{% url 'services:service_messages' service.get_public_slug %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i>К списку диалогов
+                </a>
             </div>
-            <div class="card-body p-0">
-                <div id="messages-container" style="max-height: 500px; overflow-y: auto; padding: 20px;">
-                    <!-- Сообщения -->
-                    <div id="messages-list">
-                        {% if message_list %}
-                            {% for message in message_list %}
+        {% endif %}
+
+        <!-- Список диалогов для автора услуги (если не выбран конкретный диалог) -->
+        {% if user.is_authenticated and user == service.author and conversations and not conversation_user %}
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header">
+                    <h3 class="h5 mb-0">Диалоги по услуге{% if conversations %} ({{ conversations|length }}){% endif %}</h3>
+                </div>
+                <div class="card-body">
+                    {% for conv_user in conversations %}
+                        <div class="card mb-3 border">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="d-flex align-items-center">
+                                        {% if conv_user.avatar %}
+                                            <img src="{{ conv_user.avatar.url }}" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;" alt="Аватар">
+                                        {% else %}
+                                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                                <span class="text-white">{{ conv_user.username|first|upper }}</span>
+                                            </div>
+                                        {% endif %}
+                                        <div>
+                                            <h5 class="mb-1">{{ conv_user.get_full_name|default:conv_user.username }}</h5>
+                                            <small class="text-muted">@{{ conv_user.username }}</small>
+                                        </div>
+                                    </div>
+                                    {% if conv_user.unread_count > 0 %}
+                                        <span class="badge bg-danger">{{ conv_user.unread_count }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="bi bi-clock me-1"></i>
+                                        {% if conv_user.last_message_time %}
+                                            Последнее сообщение: {{ conv_user.last_message_time|date:"d.m.Y H:i" }}
+                                        {% else %}
+                                            Нет сообщений
+                                        {% endif %}
+                                    </small>
+                                    <a href="{% url 'services:service_messages' service.get_public_slug %}?user_id={{ conv_user.id }}" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-chat-dots me-1"></i>Открыть диалог
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% else %}
+            <!-- Чат -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="h5 mb-0">Сообщения</h3>
+                    <span class="badge bg-primary" id="message-count">{{ message_list|length }}</span>
+                </div>
+                <div class="card-body p-4">
+                    <div id="messages-container">
+                        <!-- Сообщения -->
+                        <div id="messages-list">
+                            {% if message_list %}
+                                {% for message in message_list %}
                                 <div class="mb-3 d-flex {% if message.sender == user %}flex-row-reverse{% else %}flex-row{% endif %} align-items-start message-item" data-message-id="{{ message.id }}">
-                                    <div class="me-2 {% if message.sender == user %}ms-2{% endif %}">
+                                    <div class="{% if message.sender == user %}ms-2{% else %}me-2{% endif %}" style="flex-shrink: 0;">
                                         {% if message.sender.avatar %}
                                             <img src="{{ message.sender.avatar.url }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
                                         {% else %}
@@ -62,7 +118,7 @@
                                             </div>
                                         {% endif %}
                                     </div>
-                                    <div class="flex-grow-1" style="max-width: 70%;">
+                                    <div style="max-width: 70%;">
                                         <div class="d-inline-block {% if message.sender == user %}message-own{% else %}message-other{% endif %} p-3 rounded w-100">
                                             <div class="mb-1">
                                                 <strong>{{ message.sender.get_full_name|default:message.sender.username }}</strong>
@@ -75,35 +131,38 @@
                                     </div>
                                 </div>
                             {% endfor %}
-                        {% else %}
-                            <div class="text-center text-muted py-4">
-                                <p>Пока нет сообщений. Начните общение!</p>
-                            </div>
-                        {% endif %}
+                            {% else %}
+                                <div class="text-center text-muted py-4">
+                                    <p>Пока нет сообщений. Начните общение!</p>
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Форма для отправки сообщения -->
-        <div class="card mb-4 shadow-sm">
-            <div class="card-body">
-                <h3 class="h5 mb-3">Отправить сообщение</h3>
-                <form id="message-form" method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        {{ message_form.content.label_tag }}
-                        {{ message_form.content }}
-                        {% if message_form.content.errors %}
-                            <div class="text-danger small">{{ message_form.content.errors }}</div>
-                        {% endif %}
-                    </div>
-                    <button type="submit" class="btn btn-primary" id="send-button">
-                        <i class="bi bi-send me-1"></i>Отправить
-                    </button>
-                </form>
+            <!-- Форма для отправки сообщения -->
+            {% if not conversations or conversation_user %}
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h3 class="h5 mb-3">Отправить сообщение</h3>
+                    <form id="message-form" method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            {{ message_form.content.label_tag }}
+                            {{ message_form.content }}
+                            {% if message_form.content.errors %}
+                                <div class="text-danger small">{{ message_form.content.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="send-button">
+                            <i class="bi bi-send me-1"></i>Отправить
+                        </button>
+                    </form>
+                </div>
             </div>
-        </div>
+            {% endif %}
+        {% endif %}
     </div>
     <div class="col-lg-4 sticky-sidebar">
         <!-- Участники общения -->
@@ -183,13 +242,13 @@
 
 <style>
     .message-own {
-        background-color: #667eea;
-        color: white;
-        border-radius: 18px 18px 4px 18px;
+        background-color: #E8F5E9; /* Светло-зеленый */
+        color: #333;
+        border-radius: 18px 18px 18px 4px;
     }
     
     .message-other {
-        background-color: #f1f3f5;
+        background-color: #FFF4E6; /* Светло-оранжевый */
         color: #333;
         border-radius: 18px 18px 18px 4px;
     }
@@ -198,68 +257,41 @@
         word-wrap: break-word;
     }
     
-    #messages-container {
-        scroll-behavior: smooth;
-    }
-    
-    #messages-container::-webkit-scrollbar {
-        width: 6px;
-    }
-    
-    #messages-container::-webkit-scrollbar-track {
-        background: #f1f1f1;
-    }
-    
-    #messages-container::-webkit-scrollbar-thumb {
-        background: #888;
-        border-radius: 3px;
-    }
-    
-    #messages-container::-webkit-scrollbar-thumb:hover {
-        background: #555;
-    }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const messageForm = document.getElementById('message-form');
-    const messagesList = document.getElementById('messages-list');
-    const messagesContainer = document.getElementById('messages-container');
     const messageInput = document.getElementById('id_content');
     const sendButton = document.getElementById('send-button');
     const messageCount = document.getElementById('message-count');
-    const serviceSlug = '{{ service.get_public_slug }}';
-    const currentUser = '{{ user.username }}';
-    const currentUserFullName = '{{ user.get_full_name|default:user.username }}';
-    const currentUserAvatar = '{% if user.avatar %}{{ user.avatar.url }}{% endif %}';
-    
-    // Автоскролл вниз при загрузке
-    scrollToBottom();
     
     // Обработка отправки формы
-    messageForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const content = messageInput.value.trim();
-        if (!content) {
-            return;
-        }
-        
-        // Отключаем кнопку отправки
-        sendButton.disabled = true;
-        sendButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Отправка...';
-        
-        // Отправляем форму обычным способом (POST)
-        messageForm.submit();
-    });
-    
-    function updateMessageCount() {
-        const count = document.querySelectorAll('.message-item').length;
-        messageCount.textContent = count;
+    if (messageForm) {
+        messageForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const content = messageInput.value.trim();
+            if (!content) {
+                return;
+            }
+            
+            // Отключаем кнопку отправки
+            if (sendButton) {
+                sendButton.disabled = true;
+                sendButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Отправка...';
+            }
+            
+            // Отправляем форму обычным способом (POST)
+            messageForm.submit();
+        });
     }
     
-    function scrollToBottom() {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    function updateMessageCount() {
+        if (messageCount) {
+            const count = document.querySelectorAll('.message-item').length;
+            messageCount.textContent = count;
+        }
     }
 });
 </script>

@@ -7,6 +7,11 @@ class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = CustomUser
         fields = ('username', 'email', 'first_name', 'last_name', 'date_of_birth')
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Изменяем подсказку для поля username
+        self.fields['username'].help_text = 'Только латинские буквы, цифры и символы @ . + - _'
 
 class CustomUserChangeForm(UserChangeForm):
     password = None

@@ -46,11 +46,11 @@
                 <h3 class="h5 mb-0">Сообщения</h3>
                 <span class="badge bg-primary" id="message-count">{{ message_list|length }}</span>
             </div>
-            <div class="card-body p-0">
-                <div id="messages-container" style="max-height: 500px; overflow-y: auto; padding: 20px;">
+            <div class="card-body p-4">
+                <div id="messages-container">
                     <!-- Исходное сообщение отклика -->
                     <div class="mb-3 d-flex {% if response.candidate == user %}flex-row-reverse{% else %}flex-row{% endif %} align-items-start">
-                        <div class="me-2 {% if response.candidate == user %}ms-2{% endif %}">
+                        <div class="{% if response.candidate == user %}ms-2{% else %}me-2{% endif %}" style="flex-shrink: 0;">
                             {% if response.candidate.avatar %}
                                 <img src="{{ response.candidate.avatar.url }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
                             {% else %}
@@ -59,7 +59,7 @@
                                 </div>
                             {% endif %}
                         </div>
-                        <div class="flex-grow-1" style="max-width: 70%;">
+                        <div style="max-width: 70%;">
                             <div class="d-inline-block {% if response.candidate == user %}message-own{% else %}message-other{% endif %} p-3 rounded w-100">
                                 <div class="mb-1 d-flex justify-content-between align-items-center">
                                     <div>
@@ -80,7 +80,7 @@
                         {% if message_list %}
                             {% for message in message_list %}
                                 <div class="mb-3 d-flex {% if message.sender == user %}flex-row-reverse{% else %}flex-row{% endif %} align-items-start message-item" data-message-id="{{ message.id }}">
-                                    <div class="me-2 {% if message.sender == user %}ms-2{% endif %}">
+                                    <div class="{% if message.sender == user %}ms-2{% else %}me-2{% endif %}" style="flex-shrink: 0;">
                                         {% if message.sender.avatar %}
                                             <img src="{{ message.sender.avatar.url }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
                                         {% else %}
@@ -89,7 +89,7 @@
                                             </div>
                                         {% endif %}
                                     </div>
-                                    <div class="flex-grow-1" style="max-width: 70%;">
+                                    <div style="max-width: 70%;">
                                         <div class="d-inline-block {% if message.sender == user %}message-own{% else %}message-other{% endif %} p-3 rounded w-100">
                                             <div class="mb-1">
                                                 <strong>{{ message.sender.get_full_name|default:message.sender.username }}</strong>
@@ -265,13 +265,13 @@
 
 <style>
     .message-own {
-        background-color: #667eea;
-        color: white;
-        border-radius: 18px 18px 4px 18px;
+        background-color: #E8F5E9; /* Светло-зеленый */
+        color: #333;
+        border-radius: 18px 18px 18px 4px;
     }
     
     .message-other {
-        background-color: #f1f3f5;
+        background-color: #FFF4E6; /* Светло-оранжевый */
         color: #333;
         border-radius: 18px 18px 18px 4px;
     }
@@ -279,34 +279,12 @@
     .message-content {
         word-wrap: break-word;
     }
-    
-    #messages-container {
-        scroll-behavior: smooth;
-    }
-    
-    #messages-container::-webkit-scrollbar {
-        width: 6px;
-    }
-    
-    #messages-container::-webkit-scrollbar-track {
-        background: #f1f1f1;
-    }
-    
-    #messages-container::-webkit-scrollbar-thumb {
-        background: #888;
-        border-radius: 3px;
-    }
-    
-    #messages-container::-webkit-scrollbar-thumb:hover {
-        background: #555;
-    }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const messageForm = document.getElementById('message-form');
     const messagesList = document.getElementById('messages-list');
-    const messagesContainer = document.getElementById('messages-container');
     const messageInput = document.getElementById('id_content');
     const sendButton = document.getElementById('send-button');
     const messageCount = document.getElementById('message-count');
@@ -315,9 +293,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const currentUserFullName = '{{ user.get_full_name|default:user.username }}';
     const currentUserAvatar = '{% if user.avatar %}{{ user.avatar.url }}{% endif %}';
     const sendMessageUrl = '{% url "tasks:send_message" response_id=response.id %}';
-    
-    // Автоскролл вниз при загрузке
-    scrollToBottom();
     
     // Обработка отправки формы через AJAX
     messageForm.addEventListener('submit', function(e) {
@@ -352,8 +327,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 messageInput.value = '';
                 // Обновляем счетчик сообщений
                 updateMessageCount();
-                // Скроллим вниз
-                scrollToBottom();
             } else {
                 alert('Ошибка при отправке сообщения: ' + (data.error || 'Неизвестная ошибка'));
             }
@@ -389,7 +362,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="ms-2">
                     ${avatarHtml}
                 </div>
-                <div class="flex-grow-1" style="max-width: 70%;">
+                <div style="max-width: 70%;">
                     <div class="d-inline-block message-own p-3 rounded w-100">
                         <div class="mb-1">
                             <strong>${senderName}</strong>
@@ -409,10 +382,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateMessageCount() {
         const count = document.querySelectorAll('.message-item').length;
         messageCount.textContent = count;
-    }
-    
-    function scrollToBottom() {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
     
     // Автообновление сообщений каждые 5 секунд

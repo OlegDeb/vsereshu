@@ -3,6 +3,9 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views.decorators.http import require_POST
+from django.db.models import Q, Max, Count
+from django.db import models
+from django.urls import reverse
 
 from .models import Service, ServiceMessage
 from .forms import ServiceForm, ServiceMessageForm
@@ -168,12 +171,47 @@ def service_detail(request, slug: str):
     
     # Форма для отправки сообщения (только для авторизованных пользователей, которые не являются автором)
     message_form = None
+    user_messages = None
     if request.user.is_authenticated and request.user != service.author:
         message_form = ServiceMessageForm()
+        # Получаем переписку обычного пользователя с автором услуги
+        user_messages = ServiceMessage.objects.filter(
+            service=service
+        ).filter(
+            Q(sender=request.user, recipient=service.author) | Q(sender=service.author, recipient=request.user)
+        ).select_related("sender", "recipient").order_by("created_at")
+    
+    # Для автора услуги получаем список диалогов (пользователей, с которыми есть переписка)
+    conversations = None
+    if request.user.is_authenticated and request.user == service.author:
+        # Получаем уникальных пользователей, с которыми есть переписка (кроме автора)
+        user_ids = ServiceMessage.objects.filter(
+            service=service
+        ).exclude(
+            sender=service.author
+        ).values_list('sender', flat=True).distinct()
+        
+        from users.models import CustomUser
+        conversations = CustomUser.objects.filter(id__in=user_ids).annotate(
+            last_message_time=Max(
+                'sent_service_messages__created_at',
+                filter=Q(sent_service_messages__service=service)
+            ),
+            unread_count=Count(
+                'sent_service_messages__id',
+                filter=Q(
+                    sent_service_messages__service=service,
+                    sent_service_messages__recipient=request.user,
+                    sent_service_messages__is_read=False
+                )
+            )
+        ).order_by('-last_message_time')
     
     context = {
         "service": service,
         "message_form": message_form,
+        "conversations": conversations,
+        "user_messages": user_messages,
     }
     return render(request, "services/service_detail.html", context)
 
@@ -280,21 +318,66 @@ def service_messages(request, slug: str):
         is_active=True,
     )
     
-    # Проверяем права доступа: только автор услуги или тот, кто писал сообщения
-    if request.user != service.author:
-        # Проверяем, есть ли сообщения от этого пользователя
+    # Получаем ID собеседника из GET параметра (для автора услуги)
+    conversation_user_id = request.GET.get('user_id')
+    conversation_user = None
+    if conversation_user_id:
+        try:
+            from users.models import CustomUser
+            conversation_user = CustomUser.objects.get(pk=int(conversation_user_id))
+        except (ValueError, CustomUser.DoesNotExist):
+            conversation_user = None
+    
+    # Проверяем права доступа: только автор услуги или тот, кто писал/получал сообщения, или администратор
+    is_admin = request.user.is_staff
+    is_author = request.user == service.author
+    has_messages = False
+    
+    if not is_admin and not is_author:
+        # Проверяем, есть ли сообщения, где пользователь является отправителем или получателем
         has_messages = ServiceMessage.objects.filter(
-            service=service,
-            sender=request.user
+            service=service
+        ).filter(
+            Q(sender=request.user) | Q(recipient=request.user)
         ).exists()
+        
         if not has_messages:
             messages.error(request, "У вас нет доступа к этому диалогу.")
             return redirect("services:service_detail", slug=service.get_public_slug())
     
-    # Получаем все сообщения по этой услуге
-    message_list = ServiceMessage.objects.filter(
-        service=service
-    ).select_related("sender", "recipient").order_by("created_at")
+    # Получаем сообщения: для обычных пользователей - только их переписка, для админов - все
+    if is_admin:
+        # Администратор видит все сообщения по услуге
+        if conversation_user:
+            # Если указан конкретный пользователь, показываем переписку с ним
+            message_list = ServiceMessage.objects.filter(
+                service=service
+            ).filter(
+                Q(sender=conversation_user) | Q(recipient=conversation_user)
+            ).select_related("sender", "recipient").order_by("created_at")
+        else:
+            message_list = ServiceMessage.objects.filter(
+                service=service
+            ).select_related("sender", "recipient").order_by("created_at")
+    elif is_author:
+        if conversation_user:
+            # Автор услуги просматривает переписку с конкретным пользователем
+            message_list = ServiceMessage.objects.filter(
+                service=service
+            ).filter(
+                Q(sender=conversation_user, recipient=request.user) | Q(sender=request.user, recipient=conversation_user)
+            ).select_related("sender", "recipient").order_by("created_at")
+        else:
+            # Автор услуги без указания пользователя - получаем список всех диалогов для отображения
+            # В этом случае message_list будет пустым, и мы покажем список диалогов
+            message_list = ServiceMessage.objects.none()
+    else:
+        # Обычный пользователь видит только сообщения, где он отправитель или получатель
+        message_list = ServiceMessage.objects.filter(
+            service=service
+        ).filter(
+            Q(sender=request.user) | Q(recipient=request.user)
+        ).select_related("sender", "recipient").order_by("created_at")
     
     # Помечаем сообщения как прочитанные для текущего пользователя
     ServiceMessage.objects.filter(
@@ -303,19 +386,23 @@ def service_messages(request, slug: str):
     ).exclude(sender=request.user).update(is_read=True)
     
     # Определяем собеседника
-    if request.user == service.author:
-        # Если текущий пользователь - автор, находим последнего отправителя сообщений (кроме автора)
-        last_message = ServiceMessage.objects.filter(
-            service=service
-        ).exclude(sender=service.author).order_by('-created_at').first()
-        if last_message:
-            other_user = last_message.sender
+    if conversation_user:
+        # Если указан конкретный пользователь для диалога
+        other_user = conversation_user
+    elif is_author:
+        # Автор услуги - находим последнего собеседника из сообщений
+        last_message = message_list.exclude(sender=service.author).order_by('-created_at').first()
+        other_user = last_message.sender if last_message else None
+    elif is_admin:
+        # Для администратора определяем собеседника из сообщений
+        if request.user == service.author:
+            last_message = message_list.exclude(sender=service.author).order_by('-created_at').first()
         else:
-            # Если нет сообщений от других пользователей, other_user будет None
-            other_user = None
+            last_message = message_list.exclude(sender=request.user).order_by('-created_at').first()
+        other_user = last_message.sender if last_message else None
     else:
-        # Если текущий пользователь - не автор, собеседник - автор
-        other_user = service.author
+        # Обычный пользователь - собеседник - автор услуги
+        other_user = service.author if message_list.exists() else None
     
     # Форма для отправки сообщения
     message_form = ServiceMessageForm()
@@ -326,28 +413,67 @@ def service_messages(request, slug: str):
             message = message_form.save(commit=False)
             message.service = service
             message.sender = request.user
-            # Если отправитель - автор, получатель - последний отправитель сообщений (кроме автора)
-            # Если отправитель - не автор, получатель - автор
-            if request.user == service.author:
-                # Находим последнее сообщение от не-автора
-                last_message = ServiceMessage.objects.filter(
-                    service=service
-                ).exclude(sender=service.author).order_by('-created_at').first()
-                if last_message:
-                    message.recipient = last_message.sender
-                else:
-                    messages.error(request, "Не удалось определить получателя.")
-                    return redirect("services:service_messages", slug=service.get_public_slug())
+            # Определяем получателя на основе собеседника из текущего диалога
+            if conversation_user:
+                # Если открыт диалог с конкретным пользователем
+                message.recipient = conversation_user
+            elif other_user:
+                message.recipient = other_user
             else:
-                message.recipient = service.author
+                # Если не удалось определить собеседника, используем логику по умолчанию
+                if request.user == service.author:
+                    # Автор услуги - ищем последнего отправителя из отфильтрованных сообщений
+                    last_message = message_list.exclude(sender=service.author).order_by('-created_at').first()
+                    if last_message:
+                        message.recipient = last_message.sender
+                    else:
+                        messages.error(request, "Не удалось определить получателя.")
+                        if conversation_user:
+                            return redirect(f"{reverse('services:service_messages', args=[service.get_public_slug()])}?user_id={conversation_user.id}")
+                        return redirect("services:service_detail", slug=service.get_public_slug())
+                else:
+                    # Обычный пользователь - отправляем автору услуги
+                    message.recipient = service.author
             message.save()
             messages.success(request, "Сообщение отправлено!")
+            # Редиректим обратно в тот же диалог, если был указан конкретный пользователь
+            if conversation_user:
+                return redirect(f"{reverse('services:service_messages', args=[service.get_public_slug()])}?user_id={conversation_user.id}")
             return redirect("services:service_messages", slug=service.get_public_slug())
+    
+    # Для автора услуги получаем список всех диалогов, если не указан конкретный пользователь
+    conversations_list = None
+    if is_author and not conversation_user:
+        # Получаем уникальных пользователей, с которыми есть переписка (кроме автора)
+        user_ids = ServiceMessage.objects.filter(
+            service=service
+        ).exclude(
+            sender=service.author
+        ).values_list('sender', flat=True).distinct()
+        
+        if user_ids:
+            from users.models import CustomUser
+            conversations_list = CustomUser.objects.filter(id__in=user_ids).annotate(
+                last_message_time=Max(
+                    'sent_service_messages__created_at',
+                    filter=Q(sent_service_messages__service=service)
+                ),
+                unread_count=Count(
+                    'sent_service_messages__id',
+                    filter=Q(
+                        sent_service_messages__service=service,
+                        sent_service_messages__recipient=request.user,
+                        sent_service_messages__is_read=False
+                    )
+                )
+            ).order_by('-last_message_time')
     
     context = {
         "service": service,
         "message_list": message_list,
         "message_form": message_form,
         "other_user": other_user,
+        "conversations": conversations_list,
+        "conversation_user": conversation_user,
     }
     return render(request, "services/service_messages.html", context)

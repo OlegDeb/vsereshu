@@ -40,19 +40,14 @@
         {% if tasks %}
             <div class="list-group">
                 {% for task in tasks %}
-                    <div class="list-group-item list-group-item-action border rounded mb-3 shadow-sm p-4" style="background-color: #ffffff; border-width: 2px !important;">
+                    <div class="list-group-item border rounded mb-3 shadow-sm p-4 task-card" style="background-color: #ffffff; border-width: 2px !important; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;" onclick="window.location.href='{% url 'tasks:task_detail' task.get_public_slug %}'">
                         <div class="row g-0">
-                            <!-- Левая часть: заголовок, описание и кнопка -->
+                            <!-- Левая часть: заголовок и описание -->
                             <div class="col-md-9 pe-md-2">
-                                <h4 class="mb-3 fw-bold">
-                                    <a href="{% url 'tasks:task_detail' task.get_public_slug %}" class="text-decoration-none" style="color: #003366;">
-                                        {{ task.title }}
-                                    </a>
+                                <h4 class="mb-3 fw-bold" style="color: #003366;">
+                                    {{ task.title }}
                                 </h4>
-                                <p class="mb-3" style="font-size: 1rem; color: #495057; line-height: 1.6;">{{ task.description|truncatewords:50 }}</p>
-                                <a href="{% url 'tasks:task_detail' task.get_public_slug %}" class="btn btn-outline-primary btn-lg">
-                                    Подробнее
-                                </a>
+                                <p class="mb-3 task-description-card" style="font-size: 1rem; color: #495057; line-height: 1.6;">{{ task.description }}</p>
                             </div>
 
                             <!-- Правая часть: метаданные в столбик -->
@@ -164,4 +159,11 @@
         {% endif %}
     </div>
 </div>
+
+<style>
+    .task-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 51, 102, 0.15) !important;
+    }
+</style>
 {% endblock %}

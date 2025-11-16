@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from categories.models import CategorySection, Category
+from services.models import Service
 
 # Create your views here.
 def home(request):
@@ -20,7 +21,16 @@ def home(request):
                 'categories': categories
             })
     
+    # Получаем последние услуги (только проверенные модератором и активные)
+    latest_services = Service.objects.select_related(
+        'category', 'city', 'author', 'category__section'
+    ).filter(
+        is_active=True,
+        is_moderated=True
+    ).order_by('-created_at')[:6]
+    
     context = {
-        'sections_with_categories': sections_with_categories
+        'sections_with_categories': sections_with_categories,
+        'latest_services': latest_services
     }
     return render(request, 'main/home.html', context)

@@ -20,6 +20,17 @@
     object-fit: contain;
 }
 
+@media (max-width: 991px) {
+    .navbar-logo {
+        height: 30px;
+    }
+}
+
+html, body {
+    overflow-x: hidden;
+    max-width: 100%;
+}
+
 body {
     padding-top: 76px;
     /* Высота фиксированного navbar */
@@ -50,6 +61,11 @@ body {
 }
 
 /* Стили для ссылок в навбаре */
+.navbar-nav .nav-item {
+    display: flex !important;
+    align-items: center !important;
+}
+
 .navbar-nav .nav-link {
     font-weight: 600 !important;
     color: #333 !important;
@@ -58,6 +74,8 @@ body {
     margin: 0 0.25rem;
     position: relative;
     border-bottom: 3px solid transparent;
+    display: flex !important;
+    align-items: center !important;
 }
 
 .navbar-nav .nav-link:hover {
@@ -75,12 +93,12 @@ body {
 
 /* Стили для сообщений */
 .message-own {
-    background-color: #FFF9E6; /* Светло-кремовый */
+    background-color: #E8F5E9; /* Светло-зеленый */
     color: #333;
 }
 
 .message-other {
-    background-color: #F0F4FF; /* Светло-лавандовый */
+    background-color: #FFF4E6; /* Светло-оранжевый */
     color: #333;
 }
 
@@ -89,8 +107,6 @@ body {
     position: sticky;
     top: 76px; /* Высота navbar */
     align-self: flex-start;
-    max-height: calc(100vh - 76px);
-    overflow-y: auto;
 }
 
 /* Фоновые цвета для блоков сайдбара */
@@ -305,4 +321,189 @@ h1, h2, h3, h4, h5, h6 {
 .task-header-gradient h5,
 .task-header-gradient h6 {
     color: #ffffff;
+}
+
+/* Стили для навбара с новой структурой */
+.navbar .container > .d-flex {
+    position: relative;
+}
+
+.navbar-center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Стили для блока с иконками справа */
+.navbar .d-flex.gap-2 {
+    gap: 0.5rem !important;
+}
+
+.navbar .d-flex.gap-2 > .nav-item {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-nav .nav-link[data-bs-toggle="dropdown"] {
+    padding: 0.5rem 0.75rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.navbar-nav .nav-link i.bi-envelope {
+    color: #333;
+    transition: color 0.3s ease;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+}
+
+.navbar-nav .nav-link:hover i.bi-envelope {
+    color: #667eea;
+}
+
+#messages-badge {
+    font-size: 0.7rem;
+    padding: 0.2em 0.5em;
+    min-width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+/* Стили для выпадающего меню сообщений */
+.messages-dropdown {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 0;
+}
+
+.messages-dropdown .dropdown-header {
+    font-weight: 600;
+    padding: 0.75rem 1rem;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.messages-dropdown-item {
+    padding: 0.75rem 1rem;
+    transition: background-color 0.2s ease;
+    border: none;
+    text-decoration: none;
+}
+
+.messages-dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+.messages-dropdown-item:active {
+    background-color: #e9ecef;
+}
+
+.messages-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.messages-dropdown::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 0 8px 8px 0;
+}
+
+.messages-dropdown::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.messages-dropdown::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0.25rem 0 !important;
+        min-height: 50px !important;
+    }
+    
+    .navbar .container {
+        padding: 0 15px !important;
+    }
+    
+    .navbar-brand {
+        padding: 0.25rem 0 !important;
+        margin: 0 !important;
+    }
+    
+    .messages-dropdown {
+        min-width: 280px !important;
+        max-width: 90vw;
+    }
+    
+    .navbar-nav .nav-item.dropdown.me-3 {
+        margin-right: 0.5rem !important;
+    }
+    
+    .navbar-logo {
+        height: 25px;
+    }
+    
+    .navbar-avatar {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .navbar-nav .nav-link {
+        padding: 0.35rem 0.5rem !important;
+        font-size: 0.875rem;
+    }
+    
+    .navbar-nav .nav-link i.bi-envelope {
+        font-size: 1.1rem;
+    }
+    
+    .navbar-toggler {
+        padding: 0.25rem 0.5rem !important;
+    }
+    
+    body {
+        padding-top: 50px !important;
+    }
+}
+
+/* Ограничение описания в карточках услуг и задач (2-3 строки) */
+.service-description-card,
+.task-description-card {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.6;
+    max-height: calc(1.6em * 3); /* Примерная высота для 3 строк */
+}
+
+/* Стили для футера */
+footer {
+    border-top: 1px solid #dee2e6;
+    margin-top: auto;
+}
+
+footer a {
+    transition: color 0.2s ease;
+}
+
+footer a:hover {
+    color: #667eea !important;
+}
+
+footer h5,
+footer h6 {
+    color: #003366;
+}
+
+footer ul.list-unstyled li {
+    line-height: 1.8;
 }

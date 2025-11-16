@@ -39,55 +39,50 @@
         {% if services %}
             <div class="row g-4">
                 {% for service in services %}
-                    <div class="col-md-6">
-                        <div class="card h-100 shadow-sm service-card" style="transition: transform 0.3s ease, box-shadow 0.3s ease; border-radius: 15px; border: 2px solid #e9ecef !important; background-color: #ffffff;">
-                            <div class="card-body d-flex flex-column p-4">
-                                <div class="mb-3">
-                                    <h4 class="card-title fw-bold mb-3" style="color: #667eea; font-size: 1.25rem;">
-                                        <a href="{% url 'services:service_detail' service.get_public_slug %}" class="text-decoration-none" style="color: #667eea;">
-                                            {{ service.title|truncatewords:10 }}
-                                        </a>
-                                    </h4>
-                                    <p class="card-text mb-3" style="font-size: 1rem; color: #495057; line-height: 1.6;">{{ service.description|truncatewords:20 }}</p>
-                                </div>
-                                
-                                <div class="mt-auto">
-                                    <div class="d-flex flex-wrap gap-2 mb-3" style="font-size: 1rem;">
-                                        <span class="badge bg-light text-dark" style="padding: 0.5rem 0.75rem;">
+                    <div class="col-12">
+                        <a href="{% url 'services:service_detail' service.get_public_slug %}" class="text-decoration-none">
+                            <div class="card shadow-sm service-card" style="transition: transform 0.3s ease, box-shadow 0.3s ease; border-radius: 15px; border: 2px solid #e9ecef !important; background-color: #ffffff;">
+                                <div class="card-body p-4">
+                                    <!-- Просмотры, дата, категория (сверху) -->
+                                    <div class="d-flex flex-wrap gap-2 mb-3" style="font-size: 0.9rem;">
+                                        <span class="badge bg-light text-dark" style="padding: 0.4rem 0.6rem;">
                                             <i class="bi bi-eye me-1"></i><strong>{{ service.views }}</strong>
                                         </span>
-                                        <span class="badge bg-light text-dark" style="padding: 0.5rem 0.75rem;">
+                                        <span class="badge bg-light text-dark" style="padding: 0.4rem 0.6rem;">
                                             <i class="bi bi-calendar me-1"></i><strong>{{ service.created_at|date:"d.m.Y" }}</strong>
                                         </span>
-                                        <span class="badge bg-light text-dark" style="padding: 0.5rem 0.75rem;">
+                                        <span class="badge bg-light text-dark" style="padding: 0.4rem 0.6rem;">
                                             <i class="bi bi-tag me-1"></i><strong>{{ service.category.name|truncatewords:2 }}</strong>
                                         </span>
                                     </div>
                                     
-                                    <div class="mb-3" style="font-size: 0.95rem;">
-                                        <div class="mb-2 d-flex justify-content-between align-items-center" style="color: #6c757d;">
+                                    <!-- Заголовок -->
+                                    <h4 class="card-title fw-bold mb-3" style="color: #667eea; font-size: 1.25rem;">
+                                        {{ service.title|truncatewords:10 }}
+                                    </h4>
+                                    
+                                    <!-- Описание -->
+                                    <p class="card-text mb-3 service-description-card" style="font-size: 1rem; color: #495057; line-height: 1.6;">{{ service.description }}</p>
+                                    
+                                    <!-- Место, город, стоимость (в один ряд) -->
+                                    <div class="d-flex flex-wrap gap-3 align-items-center" style="font-size: 0.95rem; color: #6c757d;">
+                                        <span>
+                                            <i class="bi bi-geo-alt me-1"></i><strong>{{ service.get_location_type_display }}</strong>
+                                        </span>
+                                        {% if service.city %}
                                             <span>
-                                                <i class="bi bi-geo-alt me-2"></i><strong>{{ service.get_location_type_display }}</strong>
+                                                <i class="bi bi-geo me-1"></i><strong>{{ service.city.name }}</strong>
                                             </span>
-                                            {% if service.city %}
-                                                <span>
-                                                    <i class="bi bi-geo me-2"></i><strong>{{ service.city.name }}</strong>
-                                                </span>
-                                            {% endif %}
-                                        </div>
+                                        {% endif %}
                                         {% if service.price %}
-                                            <div class="text-primary fw-bold mt-2" style="font-size: 1.1rem;">
-                                                <i class="bi bi-currency-exchange me-2"></i>{{ service.price|floatformat:2 }} ₽ / {{ service.get_payment_period_display }}
-                                            </div>
+                                            <span class="text-primary fw-bold ms-auto" style="font-size: 1.1rem;">
+                                                <i class="bi bi-currency-exchange me-1"></i>{{ service.price|floatformat:2 }} ₽ / {{ service.get_payment_period_display }}
+                                            </span>
                                         {% endif %}
                                     </div>
-                                    
-                                    <a href="{% url 'services:service_detail' service.get_public_slug %}" class="btn btn-primary w-100 btn-lg">
-                                        Подробнее
-                                    </a>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
                 {% endfor %}
             </div>
