@@ -1,5 +1,6 @@
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
+from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.contrib import messages
@@ -52,6 +53,11 @@ def task_list(request):
     
     tasks = tasks.order_by("-created_at")
     
+    # Пагинация
+    paginator = Paginator(tasks, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
     # Получаем все активные разделы с категориями
     sections = CategorySection.objects.filter(
         is_active=True
@@ -80,7 +86,8 @@ def task_list(request):
         cities = City.objects.filter(is_active=True).select_related('region').order_by('name')
     
     context = {
-        "tasks": tasks,
+        "tasks": page_obj,
+        "page_obj": page_obj,
         "sections": sections,
         "selected_section": section_slug,
         "selected_category": category_slug,

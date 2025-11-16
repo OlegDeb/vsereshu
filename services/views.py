@@ -6,6 +6,7 @@ from django.views.decorators.http import require_POST
 from django.db.models import Q, Max, Count
 from django.db import models
 from django.urls import reverse
+from django.core.paginator import Paginator
 
 from .models import Service, ServiceMessage
 from .forms import ServiceForm, ServiceMessageForm
@@ -61,6 +62,11 @@ def service_list(request):
     
     services = services.order_by("-created_at")
     
+    # Пагинация
+    paginator = Paginator(services, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
     # Получаем все активные разделы с категориями
     sections = CategorySection.objects.filter(
         is_active=True
@@ -85,7 +91,8 @@ def service_list(request):
         cities = City.objects.filter(is_active=True).select_related('region').order_by('name')
     
     context = {
-        "services": services,
+        "services": page_obj,
+        "page_obj": page_obj,
         "sections": sections,
         "selected_section": section_slug,
         "selected_category": category_slug,

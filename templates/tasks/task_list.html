@@ -47,7 +47,7 @@
                                 <h4 class="mb-3 fw-bold" style="color: #003366;">
                                     {{ task.title }}
                                 </h4>
-                                <p class="mb-3 task-description-card" style="font-size: 1rem; color: #495057; line-height: 1.6;">{{ task.description }}</p>
+                                <p class="mb-3 task-description-card" style="font-size: 1rem; color: #495057; line-height: 1.6;">{{ task.description|truncatechars:250 }}</p>
                             </div>
 
                             <!-- Правая часть: метаданные в столбик -->
@@ -78,6 +78,45 @@
                     </div>
                 {% endfor %}
             </div>
+            
+            <!-- Пагинация -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if selected_section %}section={{ selected_section }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_city %}city={{ selected_city.id }}&{% endif %}page={{ page_obj.previous_page_number }}">Предыдущая</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Предыдущая</span>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% if selected_section %}section={{ selected_section }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_city %}city={{ selected_city.id }}&{% endif %}page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if selected_section %}section={{ selected_section }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_city %}city={{ selected_city.id }}&{% endif %}page={{ page_obj.next_page_number }}">Следующая</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Следующая</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
         {% else %}
             <div class="alert alert-info">
                 <i class="bi bi-info-circle me-2"></i>Пока нет активных задач.
