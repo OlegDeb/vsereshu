@@ -23,4 +23,7 @@ urlpatterns = [
     path('moderation/warning/<int:user_id>/', views.issue_warning, name='issue_warning_user'),
     path('moderation/ban/', views.issue_ban, name='issue_ban'),
     path('moderation/ban/<int:user_id>/', views.issue_ban, name='issue_ban_user'),
+    # Уведомления
+    path('notifications/', views.notifications, name='notifications'),
+    path('notifications/<str:notification_type>/<int:notification_id>/read/', views.mark_notification_read, name='mark_notification_read'),
 ]

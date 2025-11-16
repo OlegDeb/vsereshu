@@ -53,5 +53,11 @@
         <a href="{% url 'users:public_profile' user.username %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'public_profile' %}active{% endif %}">
             👁️ Публичный профиль
         </a>
+        <a href="{% url 'users:notifications' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'notifications' %}active{% endif %}">
+            🔔 Уведомления от поддержки
+            {% if unread_notifications_count > 0 %}
+                <span class="badge bg-warning text-dark float-end">{{ unread_notifications_count }}</span>
+            {% endif %}
+        </a>
     </div>
 </div>

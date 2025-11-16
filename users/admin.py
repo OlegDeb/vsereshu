@@ -36,14 +36,14 @@ class CustomUserAdmin(UserAdmin):
 
 @admin.register(UserWarning)
 class UserWarningAdmin(admin.ModelAdmin):
-    list_display = ('user', 'admin', 'reason_short', 'is_active', 'created_at')
-    list_filter = ('is_active', 'created_at')
+    list_display = ('user', 'admin', 'reason_short', 'is_active', 'is_read', 'created_at')
+    list_filter = ('is_active', 'is_read', 'created_at')
     search_fields = ('user__username', 'user__email', 'reason')
     readonly_fields = ('created_at',)
     
     fieldsets = (
         (None, {
-            'fields': ('user', 'admin', 'reason', 'is_active')
+            'fields': ('user', 'admin', 'reason', 'is_active', 'is_read')
         }),
         ('Дополнительно', {
             'fields': ('created_at',),
@@ -92,8 +92,8 @@ class UserBanAdmin(admin.ModelAdmin):
 
 @admin.register(UserComplaint)
 class UserComplaintAdmin(admin.ModelAdmin):
-    list_display = ('complainant', 'reported_user', 'complaint_type', 'status', 'created_at', 'admin')
-    list_filter = ('status', 'complaint_type', 'created_at')
+    list_display = ('complainant', 'reported_user', 'complaint_type', 'status', 'is_read_by_complainant', 'created_at', 'admin')
+    list_filter = ('status', 'complaint_type', 'is_read_by_complainant', 'created_at')
     search_fields = ('complainant__username', 'reported_user__username', 'description')
     readonly_fields = ('created_at', 'updated_at')
     
@@ -102,7 +102,7 @@ class UserComplaintAdmin(admin.ModelAdmin):
             'fields': ('complainant', 'reported_user', 'complaint_type', 'description', 'status')
         }),
         ('Обработка', {
-            'fields': ('admin', 'admin_comment')
+            'fields': ('admin', 'admin_comment', 'is_read_by_complainant')
         }),
         ('Дополнительно', {
             'fields': ('created_at', 'updated_at'),

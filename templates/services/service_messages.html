@@ -169,37 +169,80 @@
         <div class="card shadow-sm mb-3 sidebar-block-1">
             <div class="card-body">
                 <h3 class="h5 mb-3">Участники общения</h3>
-                <div class="d-flex align-items-center mb-3">
-                    {% if service.author.avatar %}
-                        <img src="{{ service.author.avatar.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
-                    {% else %}
-                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
-                            <span class="text-white small">{{ service.author.username|first|upper }}</span>
-                        </div>
-                    {% endif %}
-                    <div>
-                        <strong>Автор услуги:</strong><br>
-                        <small>{{ service.author.get_full_name|default:service.author.username }}</small>
-                    </div>
-                </div>
-                {% if other_user %}
-                    <div class="d-flex align-items-center">
-                        {% if other_user.avatar %}
-                            <img src="{{ other_user.avatar.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
+                <div class="mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        {% if service.author.avatar %}
+                            <img src="{{ service.author.avatar.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
                         {% else %}
                             <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
-                                <span class="text-white small">{{ other_user.username|first|upper }}</span>
+                                <span class="text-white small">{{ service.author.username|first|upper }}</span>
                             </div>
                         {% endif %}
                         <div>
-                            <strong>Заказчик:</strong><br>
-                            <small>{{ other_user.get_full_name|default:other_user.username }}</small>
+                            <strong>Автор услуги:</strong><br>
+                            <small>{{ service.author.get_full_name|default:service.author.username }}</small>
+                        </div>
+                    </div>
+                </div>
+                {% if other_user %}
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            {% if other_user.avatar %}
+                                <img src="{{ other_user.avatar.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
+                            {% else %}
+                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                    <span class="text-white small">{{ other_user.username|first|upper }}</span>
+                                </div>
+                            {% endif %}
+                            <div>
+                                <strong>Собеседник:</strong><br>
+                                <small>{{ other_user.get_full_name|default:other_user.username }}</small>
+                            </div>
+                        </div>
+                    </div>
+                {% elif conversation_user %}
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            {% if conversation_user.avatar %}
+                                <img src="{{ conversation_user.avatar.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
+                            {% else %}
+                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                    <span class="text-white small">{{ conversation_user.username|first|upper }}</span>
+                                </div>
+                            {% endif %}
+                            <div>
+                                <strong>{% if user == service.author %}Собеседник{% else %}Автор услуги{% endif %}:</strong><br>
+                                <small>{{ conversation_user.get_full_name|default:conversation_user.username }}</small>
+                            </div>
                         </div>
                     </div>
                 {% else %}
-                    <div class="text-muted small">
-                        <i class="bi bi-info-circle me-1"></i>Пока нет сообщений от заказчиков
+                    <div class="text-muted small mb-3">
+                        <i class="bi bi-info-circle me-1"></i>Пока нет сообщений от собеседников
                     </div>
+                {% endif %}
+                
+                <!-- Кнопка пожаловаться на собеседника (только если есть диалог) -->
+                {% if user.is_authenticated %}
+                    {% if conversation_user and user != conversation_user %}
+                        <div class="mt-3">
+                            <a href="{% url 'users:file_complaint_user' conversation_user.id %}" class="btn btn-sm btn-outline-danger w-100">
+                                <i class="bi bi-flag me-1"></i> Пожаловаться на собеседника
+                            </a>
+                        </div>
+                    {% elif other_user and user != other_user %}
+                        <div class="mt-3">
+                            <a href="{% url 'users:file_complaint_user' other_user.id %}" class="btn btn-sm btn-outline-danger w-100">
+                                <i class="bi bi-flag me-1"></i> Пожаловаться на собеседника
+                            </a>
+                        </div>
+                    {% elif not conversations and user != service.author %}
+                        <div class="mt-3">
+                            <a href="{% url 'users:file_complaint_user' service.author.id %}" class="btn btn-sm btn-outline-danger w-100">
+                                <i class="bi bi-flag me-1"></i> Пожаловаться на собеседника
+                            </a>
+                        </div>
+                    {% endif %}
                 {% endif %}
             </div>
         </div>

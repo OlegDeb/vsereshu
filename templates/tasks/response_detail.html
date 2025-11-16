@@ -133,32 +133,53 @@
         <div class="card shadow-sm mb-3 sidebar-block-1">
             <div class="card-body">
                 <h3 class="h5 mb-3">Участники общения</h3>
-                <div class="d-flex align-items-center mb-3">
-                    {% if response.task.author.avatar %}
-                        <img src="{{ response.task.author.avatar.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
-                    {% else %}
-                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
-                            <span class="text-white small">{{ response.task.author.username|first|upper }}</span>
+                <div class="mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        {% if response.task.author.avatar %}
+                            <img src="{{ response.task.author.avatar.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
+                        {% else %}
+                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                <span class="text-white small">{{ response.task.author.username|first|upper }}</span>
+                            </div>
+                        {% endif %}
+                        <div>
+                            <strong>Автор задачи:</strong><br>
+                            <small>{{ response.task.author.get_full_name|default:response.task.author.username }}</small>
                         </div>
-                    {% endif %}
-                    <div>
-                        <strong>Автор задачи:</strong><br>
-                        <small>{{ response.task.author.get_full_name|default:response.task.author.username }}</small>
                     </div>
                 </div>
-                <div class="d-flex align-items-center">
-                    {% if response.candidate.avatar %}
-                        <img src="{{ response.candidate.avatar.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
-                    {% else %}
-                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
-                            <span class="text-white small">{{ response.candidate.username|first|upper }}</span>
+                <div class="mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        {% if response.candidate.avatar %}
+                            <img src="{{ response.candidate.avatar.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
+                        {% else %}
+                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                <span class="text-white small">{{ response.candidate.username|first|upper }}</span>
+                            </div>
+                        {% endif %}
+                        <div>
+                            <strong>Кандидат:</strong><br>
+                            <small>{{ response.candidate.get_full_name|default:response.candidate.username }}</small>
                         </div>
-                    {% endif %}
-                    <div>
-                        <strong>Кандидат:</strong><br>
-                        <small>{{ response.candidate.get_full_name|default:response.candidate.username }}</small>
                     </div>
                 </div>
+                
+                <!-- Кнопка пожаловаться на собеседника -->
+                {% if user.is_authenticated %}
+                    {% if user == response.task.author and user != response.candidate %}
+                        <div class="mt-3">
+                            <a href="{% url 'users:file_complaint_user' response.candidate.id %}" class="btn btn-sm btn-outline-danger w-100">
+                                <i class="bi bi-flag me-1"></i> Пожаловаться на собеседника
+                            </a>
+                        </div>
+                    {% elif user == response.candidate and user != response.task.author %}
+                        <div class="mt-3">
+                            <a href="{% url 'users:file_complaint_user' response.task.author.id %}" class="btn btn-sm btn-outline-danger w-100">
+                                <i class="bi bi-flag me-1"></i> Пожаловаться на собеседника
+                            </a>
+                        </div>
+                    {% endif %}
+                {% endif %}
             </div>
         </div>
         

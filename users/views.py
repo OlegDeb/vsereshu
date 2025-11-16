@@ -284,6 +284,96 @@ def custom_logout(request):
 
 
 @login_required
+def notifications(request):
+    """Страница уведомлений пользователя"""
+    # Получаем предупреждения
+    warnings = request.user.warnings.filter(is_active=True).select_related('admin').order_by('-created_at')
+    
+    # Получаем активные баны
+    from django.utils import timezone
+    from django.db.models import Q
+    now = timezone.now()
+    active_bans = request.user.bans.filter(
+        is_active=True
+    ).filter(
+        Q(ban_until__isnull=True) | Q(ban_until__gt=now)
+    ).select_related('admin').order_by('-created_at')
+    
+    # Получаем жалобы пользователя, которые были обработаны (есть ответ от админа)
+    complaints = request.user.complaints_filed.filter(
+        admin_comment__isnull=False
+    ).exclude(admin_comment='').select_related('reported_user', 'admin').order_by('-updated_at')
+    
+    # Пагинация
+    from django.core.paginator import Paginator
+    all_notifications = []
+    
+    # Добавляем предупреждения
+    for warning in warnings:
+        all_notifications.append({
+            'type': 'warning',
+            'object': warning,
+            'date': warning.created_at,
+            'is_read': warning.is_read,
+        })
+    
+    # Добавляем баны
+    for ban in active_bans:
+        all_notifications.append({
+            'type': 'ban',
+            'object': ban,
+            'date': ban.created_at,
+            'is_read': False,  # Баны всегда важные, считаем непрочитанными
+        })
+    
+    # Добавляем ответы на жалобы
+    for complaint in complaints:
+        all_notifications.append({
+            'type': 'complaint_response',
+            'object': complaint,
+            'date': complaint.updated_at if complaint.updated_at != complaint.created_at else complaint.created_at,
+            'is_read': complaint.is_read_by_complainant,
+        })
+    
+    # Сортируем по дате (новые сначала)
+    all_notifications.sort(key=lambda x: x['date'], reverse=True)
+    
+    paginator = Paginator(all_notifications, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Счетчики
+    unread_count = sum(1 for n in all_notifications if not n['is_read'] and n['type'] != 'ban')
+    unread_bans_count = len(active_bans)
+    
+    context = {
+        'page_obj': page_obj,
+        'unread_count': unread_count,
+        'unread_bans_count': unread_bans_count,
+    }
+    return render(request, 'users/notifications.html', context)
+
+
+@login_required
+def mark_notification_read(request, notification_type, notification_id):
+    """Отметить уведомление как прочитанное"""
+    if notification_type == 'warning':
+        notification = get_object_or_404(UserWarning, id=notification_id, user=request.user)
+        notification.is_read = True
+        notification.save()
+        messages.success(request, 'Предупреждение отмечено как прочитанное.')
+    elif notification_type == 'complaint':
+        notification = get_object_or_404(UserComplaint, id=notification_id, complainant=request.user)
+        notification.is_read_by_complainant = True
+        notification.save()
+        messages.success(request, 'Ответ на жалобу отмечен как прочитанный.')
+    else:
+        messages.error(request, 'Неверный тип уведомления.')
+    
+    return redirect('users:notifications')
+
+
+@login_required
 def file_complaint(request, user_id=None):
     """Подача жалобы на пользователя"""
     reported_user = None

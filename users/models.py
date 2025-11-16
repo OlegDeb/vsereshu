@@ -141,6 +141,7 @@ class UserWarning(models.Model):
     )
     reason = models.TextField(verbose_name="Причина предупреждения")
     is_active = models.BooleanField(default=True, verbose_name="Активно")
+    is_read = models.BooleanField(default=False, verbose_name="Прочитано")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     
     class Meta:
@@ -251,6 +252,10 @@ class UserComplaint(models.Model):
         related_name='complaints_processed',
         verbose_name="Обработавший администратор",
         limit_choices_to={'is_staff': True}
+    )
+    is_read_by_complainant = models.BooleanField(
+        default=False,
+        verbose_name="Прочитано подавшим жалобу"
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")

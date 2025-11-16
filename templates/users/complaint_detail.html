@@ -139,10 +139,10 @@
                 <hr>
                 
                 <div class="d-grid gap-2">
-                    <a href="{% url 'users:issue_warning' complaint.reported_user.id %}" class="btn btn-warning">
+                    <a href="{% url 'users:issue_warning_user' complaint.reported_user.id %}" class="btn btn-warning">
                         <i class="bi bi-exclamation-triangle"></i> Выдать предупреждение
                     </a>
-                    <a href="{% url 'users:issue_ban' complaint.reported_user.id %}" class="btn btn-danger">
+                    <a href="{% url 'users:issue_ban_user' complaint.reported_user.id %}" class="btn btn-danger">
                         <i class="bi bi-ban"></i> Забанить пользователя
                     </a>
                 </div>
