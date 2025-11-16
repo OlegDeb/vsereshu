@@ -22,11 +22,18 @@
             flex: 1 0 auto;
             display: flex;
             flex-direction: column;
-            padding-top: 76px; /* Отступ для фиксированного навбара */
         }
-        /* Для страниц с page_header убираем padding-top, так как header уже учитывает навбар */
-        .main-content-wrapper > .task-header-gradient {
-            margin-top: -76px; /* Компенсируем padding-top обертки */
+        /* Для страниц без page_header добавляем отступ к контенту */
+        .main-content-wrapper > .container {
+            padding-top: 76px;
+        }
+        /* Если в контейнере есть task-header-gradient (главная страница), убираем padding-top */
+        .main-content-wrapper > .container:has(.task-header-gradient) {
+            padding-top: 0;
+        }
+        /* Для главной страницы корректируем margin-top градиентного блока для компенсации навбара */
+        .main-content-wrapper .container .task-header-gradient {
+            margin-top: -44px !important; /* Компенсируем навбар (76px - 32px уже есть в margin) */
         }
         footer {
             flex-shrink: 0;
