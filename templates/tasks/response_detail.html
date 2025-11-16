@@ -4,12 +4,12 @@
 
 {% block page_header %}
 <!-- Блок с градиентом и заголовком -->
-<div class="task-header-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 60px 0 40px 0; margin: -32px calc(-50vw + 50%) 40px calc(-50vw + 50%); width: 100vw; position: relative;">
+<div class="task-header-gradient">
     <div class="container">
         <div class="text-center text-white">
             <h1 class="display-5 fw-bold mb-3">Общение по отклику</h1>
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb justify-content-center mb-0" style="background-color: rgba(255, 255, 255, 0.2); border-radius: 0.375rem; padding: 0.75rem 1rem; display: inline-flex;">
+                <ol class="breadcrumb justify-content-center mb-0 breadcrumb-header">
                     <li class="breadcrumb-item">
                         <a href="{% url 'home' %}" class="text-white text-decoration-none">Главная</a>
                     </li>
@@ -50,16 +50,16 @@
                 <div id="messages-container">
                     <!-- Исходное сообщение отклика -->
                     <div class="mb-3 d-flex {% if response.candidate == user %}flex-row-reverse{% else %}flex-row{% endif %} align-items-start">
-                        <div class="{% if response.candidate == user %}ms-2{% else %}me-2{% endif %}" style="flex-shrink: 0;">
+                        <div class="{% if response.candidate == user %}ms-2{% else %}me-2{% endif %} message-avatar">
                             {% if response.candidate.avatar %}
-                                <img src="{{ response.candidate.avatar.url }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
+                                <img src="{{ response.candidate.avatar.url }}" class="rounded-circle avatar-sm" alt="Аватар">
                             {% else %}
-                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center avatar-placeholder">
                                     <span class="text-white small">{{ response.candidate.username|first|upper }}</span>
                                 </div>
                             {% endif %}
                         </div>
-                        <div style="max-width: 70%;">
+                        <div class="message-content-wrapper">
                             <div class="d-inline-block {% if response.candidate == user %}message-own{% else %}message-other{% endif %} p-3 rounded w-100">
                                 <div class="mb-1 d-flex justify-content-between align-items-center">
                                     <div>
@@ -80,16 +80,16 @@
                         {% if message_list %}
                             {% for message in message_list %}
                                 <div class="mb-3 d-flex {% if message.sender == user %}flex-row-reverse{% else %}flex-row{% endif %} align-items-start message-item" data-message-id="{{ message.id }}">
-                                    <div class="{% if message.sender == user %}ms-2{% else %}me-2{% endif %}" style="flex-shrink: 0;">
+                                    <div class="{% if message.sender == user %}ms-2{% else %}me-2{% endif %} message-avatar">
                                         {% if message.sender.avatar %}
-                                            <img src="{{ message.sender.avatar.url }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
+                                            <img src="{{ message.sender.avatar.url }}" class="rounded-circle avatar-sm" alt="Аватар">
                                         {% else %}
-                                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center avatar-placeholder">
                                                 <span class="text-white small">{{ message.sender.username|first|upper }}</span>
                                             </div>
                                         {% endif %}
                                     </div>
-                                    <div style="max-width: 70%;">
+                                    <div class="message-content-wrapper">
                                         <div class="d-inline-block {% if message.sender == user %}message-own{% else %}message-other{% endif %} p-3 rounded w-100">
                                             <div class="mb-1">
                                                 <strong>{{ message.sender.get_full_name|default:message.sender.username }}</strong>
@@ -136,9 +136,9 @@
                 <div class="mb-3">
                     <div class="d-flex align-items-center mb-2">
                         {% if response.task.author.avatar %}
-                            <img src="{{ response.task.author.avatar.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
+                            <img src="{{ response.task.author.avatar.url }}" class="rounded-circle me-2 avatar-sm" alt="Аватар">
                         {% else %}
-                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2 avatar-placeholder">
                                 <span class="text-white small">{{ response.task.author.username|first|upper }}</span>
                             </div>
                         {% endif %}
@@ -151,9 +151,9 @@
                 <div class="mb-3">
                     <div class="d-flex align-items-center mb-2">
                         {% if response.candidate.avatar %}
-                            <img src="{{ response.candidate.avatar.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
+                            <img src="{{ response.candidate.avatar.url }}" class="rounded-circle me-2 avatar-sm" alt="Аватар">
                         {% else %}
-                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2 avatar-placeholder">
                                 <span class="text-white small">{{ response.candidate.username|first|upper }}</span>
                             </div>
                         {% endif %}
@@ -261,7 +261,7 @@
                 {% if user == response.task.author and response.task.status == 'awaiting_confirmation' %}
                     <form method="post" action="{% url 'tasks:accept_task_completion' slug=response.task.get_public_slug %}" class="mt-2">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-success w-100 d-flex align-items-center justify-content-center" style="padding: 12px; font-weight: 500; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <button type="submit" class="btn btn-success w-100 d-flex align-items-center justify-content-center btn-action">
                             <i class="bi bi-check-circle me-2"></i>Принять работу
                         </button>
                     </form>
@@ -277,30 +277,13 @@
         
         <!-- Кнопка возврата к задаче -->
         <div class="mt-3">
-            <a href="{% url 'tasks:task_detail' slug=response.task.get_public_slug %}" class="btn btn-primary w-100 d-flex align-items-center justify-content-center" style="padding: 12px; font-weight: 500; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <a href="{% url 'tasks:task_detail' slug=response.task.get_public_slug %}" class="btn btn-primary w-100 d-flex align-items-center justify-content-center btn-action">
                 <i class="bi bi-arrow-left me-2"></i>К задаче
             </a>
         </div>
     </div>
 </div>
 
-<style>
-    .message-own {
-        background-color: #E8F5E9; /* Светло-зеленый */
-        color: #333;
-        border-radius: 18px 18px 18px 4px;
-    }
-    
-    .message-other {
-        background-color: #FFF4E6; /* Светло-оранжевый */
-        color: #333;
-        border-radius: 18px 18px 18px 4px;
-    }
-    
-    .message-content {
-        word-wrap: break-word;
-    }
-</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -368,8 +351,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const senderName = messageData.sender_name || messageData.sender;
         const senderAvatar = messageData.sender_avatar || '';
         const avatarHtml = senderAvatar
-            ? `<img src="${senderAvatar}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">`
-            : `<div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;"><span class="text-white small">${messageData.sender.charAt(0).toUpperCase()}</span></div>`;
+            ? `<img src="${senderAvatar}" class="rounded-circle avatar-sm" alt="Аватар">`
+            : `<div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center avatar-placeholder"><span class="text-white small">${messageData.sender.charAt(0).toUpperCase()}</span></div>`;
         
         // Экранируем HTML в содержимом сообщения
         const content = messageData.content
@@ -383,7 +366,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="ms-2">
                     ${avatarHtml}
                 </div>
-                <div style="max-width: 70%;">
+                <div class="message-content-wrapper">
                     <div class="d-inline-block message-own p-3 rounded w-100">
                         <div class="mb-1">
                             <strong>${senderName}</strong>

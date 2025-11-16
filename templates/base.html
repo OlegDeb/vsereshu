@@ -8,37 +8,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link href="{% static "css/style.css" %}" rel="stylesheet">
-    <style>
-        /* Sticky footer - прижимает футер к низу страницы */
-        html, body {
-            height: 100%;
-        }
-        body {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        .main-content-wrapper {
-            flex: 1 0 auto;
-            display: flex;
-            flex-direction: column;
-        }
-        /* Для страниц без page_header добавляем отступ к контенту */
-        .main-content-wrapper > .container {
-            padding-top: 76px;
-        }
-        /* Если в контейнере есть task-header-gradient (главная страница), убираем padding-top */
-        .main-content-wrapper > .container:has(.task-header-gradient) {
-            padding-top: 0;
-        }
-        /* Для главной страницы корректируем margin-top градиентного блока для компенсации навбара */
-        .main-content-wrapper .container .task-header-gradient {
-            margin-top: -44px !important; /* Компенсируем навбар (76px - 32px уже есть в margin) */
-        }
-        footer {
-            flex-shrink: 0;
-        }
-    </style>
 </head>
 <body>
     <!-- Фиксированное верхнее меню -->
@@ -74,7 +43,7 @@
                     </div>
                     
                     <!-- Бургер-меню для мобильных -->
-                    <button class="navbar-toggler d-lg-none ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation" style="border: none; padding: 0.5rem;">
+                    <button class="navbar-toggler d-lg-none ms-2 navbar-toggler-custom" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
                     </button>
                 </div>
@@ -84,10 +53,10 @@
                     {% if user.is_authenticated %}
                         <!-- Иконка уведомлений со счетчиком -->
                         <div class="nav-item">
-                            <a class="nav-link position-relative" href="{% url 'users:notifications' %}" style="padding: 0.5rem 0.75rem;">
+                            <a class="nav-link position-relative nav-link-icon" href="{% url 'users:notifications' %}">
                                 <i class="bi bi-bell fs-5"></i>
                                 {% if unread_notifications_count > 0 %}
-                                    <span class="position-absolute badge rounded-pill bg-warning" id="notifications-badge" style="top: 2px; right: -5px; color: #000;">
+                                    <span class="position-absolute badge rounded-pill bg-warning badge-notification" id="notifications-badge">
                                         {{ unread_notifications_count }}
                                         {% if unread_notifications_count > 99 %}
                                             <span class="visually-hidden">99+</span>
@@ -98,10 +67,10 @@
                         </div>
                         <!-- Иконка сообщений со счетчиком -->
                         <div class="nav-item dropdown">
-                            <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="padding: 0.5rem 0.75rem;">
+                            <a class="nav-link position-relative nav-link-icon" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-envelope fs-5"></i>
                                 {% if unread_messages_count > 0 %}
-                                    <span class="position-absolute badge rounded-pill bg-danger" id="messages-badge" style="top: 2px; right: -5px;">
+                                    <span class="position-absolute badge rounded-pill bg-danger badge-message" id="messages-badge">
                                         {{ unread_messages_count }}
                                         {% if unread_messages_count > 99 %}
                                             <span class="visually-hidden">99+</span>
@@ -109,7 +78,7 @@
                                     </span>
                                 {% endif %}
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end messages-dropdown" style="min-width: 320px; max-height: 500px; overflow-y: auto;">
+                            <ul class="dropdown-menu dropdown-menu-end messages-dropdown">
                                 <li>
                                     <h6 class="dropdown-header d-flex justify-content-between align-items-center">
                                         <span>Сообщения</span>
@@ -125,16 +94,16 @@
                                                 <div class="d-flex align-items-start">
                                                     <div class="flex-shrink-0 me-2">
                                                         {% if msg_info.other_user.avatar %}
-                                                            <img src="{{ msg_info.other_user.avatar.url }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" alt="{{ msg_info.other_user.username }}">
+                                                            <img src="{{ msg_info.other_user.avatar.url }}" class="rounded-circle avatar-sm" alt="{{ msg_info.other_user.username }}">
                                                         {% else %}
-                                                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center avatar-placeholder">
                                                                 <span class="text-white small">{{ msg_info.other_user.username|first|upper }}</span>
                                                             </div>
                                                         {% endif %}
                                                     </div>
                                                     <div class="flex-grow-1">
                                                         <div class="d-flex justify-content-between align-items-start mb-1">
-                                                            <strong class="text-truncate" style="max-width: 150px;">{{ msg_info.other_user.get_full_name|default:msg_info.other_user.username }}</strong>
+                                                            <strong class="text-truncate message-text-truncate">{{ msg_info.other_user.get_full_name|default:msg_info.other_user.username }}</strong>
                                                             {% if msg_info.unread_count > 1 %}
                                                                 <span class="badge bg-danger rounded-pill ms-2">{{ msg_info.unread_count }}</span>
                                                             {% endif %}
@@ -146,7 +115,7 @@
                                                                 <i class="bi bi-briefcase me-1"></i>{{ msg_info.service.title|truncatewords:8 }}
                                                             {% endif %}
                                                         </div>
-                                                        <div class="text-muted small text-truncate" style="max-width: 200px;">
+                                                        <div class="text-muted small text-truncate message-preview-truncate">
                                                             {{ msg_info.last_message.content|truncatewords:10 }}
                                                         </div>
                                                         <div class="text-muted small mt-1">
@@ -173,7 +142,7 @@
                         
                         <!-- Выпадающее меню пользователя -->
                         <div class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" style="padding: 0.5rem 1rem;">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center nav-link-user" href="#" role="button" data-bs-toggle="dropdown">
                                 {% if user.avatar %}
                                     <img src="{{ user.avatar.url }}" class="navbar-avatar rounded-circle me-1 me-md-2" alt="Аватар">
                                 {% else %}
@@ -224,8 +193,14 @@
                     {% else %}
                         <!-- Меню для неавторизованных пользователей -->
                         <div class="d-flex align-items-center">
-                            <a class="nav-link" href="{% url 'users:login' %}">Вход</a>
-                            <a class="nav-link" href="{% url 'users:register' %}" style="margin-left: 10px !important;">Регистрация</a>
+                            <a class="nav-link nav-link-icon" href="{% url 'users:login' %}" aria-label="Вход">
+                                <i class="bi bi-box-arrow-in-right fs-5"></i>
+                                <span class="d-none d-lg-inline ms-1">Вход</span>
+                            </a>
+                            <a class="nav-link nav-link-register nav-link-icon" href="{% url 'users:register' %}" aria-label="Регистрация">
+                                <i class="bi bi-person-plus fs-5"></i>
+                                <span class="d-none d-lg-inline ms-1">Регистрация</span>
+                            </a>
                         </div>
                     {% endif %}
                 </div>
@@ -261,7 +236,7 @@
         {% endblock %}
 
         <!-- Основной контент -->
-        <div class="container mt-4">
+        <div class="container" id="main-content-container">
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
@@ -283,7 +258,7 @@
                 <!-- Блок с городами -->
                 {% if footer_cities %}
                 <div class="col-md-4 mb-4 mb-md-0">
-                    <h5 class="fw-bold mb-3" style="color: #003366;">Города</h5>
+                    <h5 class="fw-bold mb-3">Города</h5>
                     <ul class="list-unstyled">
                         {% for city in footer_cities %}
                         <li class="mb-2">
@@ -304,7 +279,7 @@
                 <!-- Блок с разделами -->
                 {% if footer_sections %}
                 <div class="col-md-4 mb-4 mb-md-0">
-                    <h5 class="fw-bold mb-3" style="color: #003366;">Разделы</h5>
+                    <h5 class="fw-bold mb-3">Разделы</h5>
                     <ul class="list-unstyled">
                         {% for section in footer_sections %}
                         <li class="mb-2">
@@ -325,7 +300,7 @@
                 <!-- Блок с последними статьями -->
                 {% if footer_articles %}
                 <div class="col-md-4">
-                    <h5 class="fw-bold mb-3" style="color: #003366;">Последние статьи</h5>
+                    <h5 class="fw-bold mb-3">Последние статьи</h5>
                     <ul class="list-unstyled">
                         {% for article in footer_articles %}
                         <li class="mb-2">

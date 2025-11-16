@@ -95,11 +95,17 @@ body {
 .message-own {
     background-color: #E8F5E9; /* Светло-зеленый */
     color: #333;
+    border-radius: 18px 18px 18px 4px;
 }
 
 .message-other {
     background-color: #FFF4E6; /* Светло-оранжевый */
     color: #333;
+    border-radius: 18px 18px 18px 4px;
+}
+
+.message-content {
+    word-wrap: break-word;
 }
 
 /* Липкий сайдбар */
@@ -107,6 +113,35 @@ body {
     position: sticky;
     top: 76px; /* Высота navbar */
     align-self: flex-start;
+}
+
+/* Фиксированный сайдбар с фильтрами для задач и услуг */
+.sticky-sidebar-filters {
+    position: sticky;
+    top: 76px; /* Высота navbar */
+    align-self: flex-start;
+    max-height: calc(100vh - 96px); /* Высота экрана минус навбар и отступы */
+    overflow-y: auto;
+    padding-bottom: 20px; /* Отступ снизу для удобства прокрутки */
+}
+
+/* Стилизация скроллбара для сайдбара фильтров */
+.sticky-sidebar-filters::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sticky-sidebar-filters::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.sticky-sidebar-filters::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.sticky-sidebar-filters::-webkit-scrollbar-thumb:hover {
+    background: #555;
 }
 
 /* Фоновые цвета для блоков сайдбара */
@@ -380,6 +415,9 @@ h1, h2, h3, h4, h5, h6 {
     border: none;
     border-radius: 8px;
     padding: 0.5rem 0;
+    min-width: 320px;
+    max-height: 500px;
+    overflow-y: auto;
 }
 
 .messages-dropdown .dropdown-header {
@@ -464,12 +502,27 @@ h1, h2, h3, h4, h5, h6 {
         font-size: 1.1rem;
     }
     
+    /* Иконки для входа и регистрации на мобильных */
+    .navbar-nav .nav-link i.bi-box-arrow-in-right,
+    .navbar-nav .nav-link i.bi-person-plus {
+        font-size: 1.25rem;
+    }
+    
     .navbar-toggler {
         padding: 0.25rem 0.5rem !important;
+        border: none;
     }
     
     body {
         padding-top: 50px !important;
+    }
+    
+    /* На мобильных устройствах сайдбар не фиксируется */
+    .sticky-sidebar-filters {
+        position: relative !important;
+        top: 0 !important;
+        max-height: none !important;
+        overflow-y: visible !important;
     }
 }
 
@@ -506,4 +559,317 @@ footer h6 {
 
 footer ul.list-unstyled li {
     line-height: 1.8;
+}
+
+/* ============================================
+   Стили из шаблонов (перенесены из inline и <style>)
+   ============================================ */
+
+/* Sticky footer - прижимает футер к низу страницы */
+html, body {
+    height: 100%;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.main-content-wrapper {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Для страниц без page_header добавляем отступ к контенту */
+.main-content-wrapper > .container {
+    padding-top: 76px;
+}
+
+/* Если в контейнере есть task-header-gradient (главная страница), убираем padding-top */
+.main-content-wrapper > .container:has(.task-header-gradient) {
+    padding-top: 0 !important;
+}
+
+/* Для главной страницы корректируем margin-top градиентного блока для компенсации навбара */
+.main-content-wrapper .container .task-header-gradient {
+    margin-top: -76px !important; /* Компенсируем весь навбар (76px) */
+    margin-bottom: 40px !important; /* Сохраняем нижний отступ */
+}
+
+/* Убираем нижний отступ у заголовков на страницах с page_header (не на главной) */
+.main-content-wrapper > .task-header-gradient {
+    margin-bottom: 0 !important;
+}
+
+/* Уменьшаем отступ у контейнера после page_header - минимальный отступ вместо mt-4 */
+.main-content-wrapper > .task-header-gradient ~ #main-content-container {
+    margin-top: 0 !important;
+    padding-top: 31px !important; /* Отступ 16px + 15px = 31px */
+}
+
+/* Для страниц без page_header добавляем отступ сверху для навбара */
+.main-content-wrapper > #main-content-container:first-child {
+    padding-top: 76px; /* Отступ для навбара на страницах без page_header */
+}
+
+footer {
+    flex-shrink: 0;
+}
+
+/* Градиентный блок заголовка */
+.task-header-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    padding: 60px 0 40px 0;
+    margin: -32px calc(-50vw + 50%) 40px calc(-50vw + 50%);
+    width: 100vw;
+    position: relative;
+}
+
+.task-header-gradient.home {
+    padding: 100px 0 80px 0;
+}
+
+/* Breadcrumb стили */
+.breadcrumb-header {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 0.375rem;
+    padding: 0.75rem 1rem;
+    display: inline-flex;
+}
+
+/* Аватары маленькие (40px) */
+.avatar-sm {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 40px;
+    height: 40px;
+}
+
+/* Аватары средние (50px) */
+.avatar-md {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+}
+
+.avatar-placeholder-md {
+    width: 50px;
+    height: 50px;
+}
+
+/* Аватары для миниатюр статей (65px) */
+.avatar-article {
+    width: 65px;
+    height: 65px;
+    object-fit: cover;
+}
+
+/* Аватар большого размера (150px) */
+.avatar-lg {
+    width: 150px;
+    height: 150px;
+}
+
+/* Navbar элементы */
+.nav-link-icon {
+    padding: 0.5rem 0.75rem;
+}
+
+.nav-link-user {
+    padding: 0.5rem 1rem;
+}
+
+.nav-link-register {
+    margin-left: 10px !important;
+}
+
+.navbar-toggler-custom {
+    border: none;
+    padding: 0.5rem;
+}
+
+/* Badge стили */
+.badge-notification {
+    top: 2px;
+    right: -5px;
+    color: #000;
+}
+
+.badge-message {
+    top: 2px;
+    right: -5px;
+}
+
+/* Message элементы */
+.message-avatar {
+    flex-shrink: 0;
+}
+
+.message-content-wrapper {
+    max-width: 70%;
+}
+
+.message-text-truncate {
+    max-width: 150px;
+}
+
+.message-preview-truncate {
+    max-width: 200px;
+}
+
+/* Кнопки действий */
+.btn-action {
+    padding: 12px;
+    font-weight: 500;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Service cards стили */
+.service-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 15px;
+    border: 2px solid #e9ecef !important;
+    cursor: pointer;
+}
+
+.service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2) !important;
+}
+
+.service-card-color-1 {
+    background-color: #E8F5E9;
+}
+
+.service-card-color-2 {
+    background-color: #FFF4E6;
+}
+
+.service-card-color-3 {
+    background-color: #E3F2FD;
+}
+
+.service-card-color-4 {
+    background-color: #F3E5F5;
+}
+
+.service-card-color-5 {
+    background-color: #FFF9E6;
+}
+
+.service-card-color-6 {
+    background-color: #E0F2F1;
+}
+
+.service-card-title {
+    color: #667eea;
+    font-size: 1.25rem;
+}
+
+.service-card-text {
+    font-size: 1rem;
+    color: #495057;
+    line-height: 1.6;
+}
+
+/* Секция с фоном */
+.section-bg-light {
+    background-color: #f8f9fa;
+}
+
+/* HR стили */
+.hr-white {
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Иконки в списке преимуществ */
+.feature-icon {
+    font-size: 1.5rem;
+}
+
+/* Карточка профиля */
+.profile-card {
+    border-radius: 10px;
+    background-color: #ffffff;
+    border: 1px solid #e9ecef !important;
+}
+
+.profile-card-title {
+    color: #667eea;
+}
+
+/* Flex элементы */
+.flex-shrink-0 {
+    flex-shrink: 0;
+}
+
+/* Карточки бесед */
+.conversation-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.conversation-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Карточки задач */
+.task-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 51, 102, 0.15) !important;
+}
+
+/* Карточки услуг (для списка услуг) */
+.service-list .service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2) !important;
+}
+
+/* Радиокнопки выбора типа локации */
+.location-type-radio-card {
+    transition: all 0.3s ease;
+    user-select: none;
+    border: 1px solid #dee2e6;
+    background-color: #ffffff;
+}
+
+.location-type-radio-card:hover {
+    background-color: #f8f9fa;
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+}
+
+.location-type-radio-card:has(input[type="radio"]:checked) {
+    background-color: #e7f3ff;
+    border-color: #667eea;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.location-type-radio-card:has(input[type="radio"]:checked) span {
+    font-weight: 600;
+    color: #667eea;
+}
+
+.location-type-radio-card input[type="radio"] {
+    margin-top: 0.125rem;
+    flex-shrink: 0;
+}
+
+.location-type-radio-card input[type="radio"]:focus-visible {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+    border-radius: 50%;
+}
+
+.location-type-radio-card span {
+    line-height: 1.5;
 }

@@ -4,7 +4,7 @@
 
 {% block page_header %}
 <!-- Блок с градиентом и заголовком -->
-<div class="task-header-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 60px 0 40px 0; margin: -32px calc(-50vw + 50%) 40px calc(-50vw + 50%); width: 100vw; position: relative;">
+<div class="task-header-gradient">
     <div class="container">
         <div class="text-center text-white">
             <h1 class="display-5 fw-bold mb-3">
@@ -15,7 +15,7 @@
                 {% endif %}
             </h1>
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb justify-content-center mb-0" style="background-color: rgba(255, 255, 255, 0.2); border-radius: 0.375rem; padding: 0.75rem 1rem; display: inline-flex;">
+                <ol class="breadcrumb justify-content-center mb-0 breadcrumb-header">
                     <li class="breadcrumb-item">
                         <a href="{% url 'home' %}" class="text-white text-decoration-none">Главная</a>
                     </li>
@@ -134,7 +134,8 @@
     
     <!-- Сайдбар с фильтрами -->
     <div class="col-lg-3 mb-4">
-        <div class="card shadow-sm sticky-top" style="top: 20px;">
+        <div class="sticky-sidebar-filters">
+        <div class="card shadow-sm">
             <div class="card-body p-0">
                 <div class="accordion accordion-flush" id="filterAccordion">
                     <!-- Разделы с категориями -->
@@ -204,13 +205,8 @@
                 </div>
             </div>
         {% endif %}
+        </div>
     </div>
 </div>
 
-<style>
-    .service-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2) !important;
-    }
-</style>
 {% endblock %}

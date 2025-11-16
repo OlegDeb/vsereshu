@@ -25,7 +25,7 @@
             <a href="{% url 'articles:article_detail' popular_article.slug %}" class="list-group-item list-group-item-action">
                 <div class="d-flex align-items-center">
                     {% if popular_article.image %}
-                        <img src="{{ popular_article.image_mini.url }}" class="rounded me-3" alt="{{ popular_article.title }}" style="width: 65px; height: 65px; object-fit: cover;">
+                        <img src="{{ popular_article.image_mini.url }}" class="rounded me-3 avatar-article" alt="">
                     {% endif %}
                     <div class="flex-grow-1">
                         <h6 class="mb-0 fw-bold">{{ popular_article.title|truncatewords:8 }}</h6>

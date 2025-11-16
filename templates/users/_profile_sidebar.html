@@ -4,7 +4,7 @@
         {% if user.avatar %}
             <img src="{{ user.avatar.url }}" class="avatar rounded-circle mb-3" alt="Аватар">
         {% else %}
-            <div class="avatar rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 150px; height: 150px;">
+            <div class="avatar rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto mb-3 avatar-lg">
                 <span class="text-white fs-1">{{ user.username|first|upper }}</span>
             </div>
         {% endif %}

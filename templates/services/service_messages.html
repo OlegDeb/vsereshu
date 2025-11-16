@@ -4,12 +4,12 @@
 
 {% block page_header %}
 <!-- Блок с градиентом и заголовком -->
-<div class="task-header-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 60px 0 40px 0; margin: -32px calc(-50vw + 50%) 40px calc(-50vw + 50%); width: 100vw; position: relative;">
+<div class="task-header-gradient">
     <div class="container">
         <div class="text-center text-white">
             <h1 class="display-5 fw-bold mb-3">Общение по услуге</h1>
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb justify-content-center mb-0" style="background-color: rgba(255, 255, 255, 0.2); border-radius: 0.375rem; padding: 0.75rem 1rem; display: inline-flex;">
+                <ol class="breadcrumb justify-content-center mb-0 breadcrumb-header">
                     <li class="breadcrumb-item">
                         <a href="{% url 'home' %}" class="text-white text-decoration-none">Главная</a>
                     </li>
@@ -62,7 +62,7 @@
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <div class="d-flex align-items-center">
                                         {% if conv_user.avatar %}
-                                            <img src="{{ conv_user.avatar.url }}" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;" alt="Аватар">
+                                            <img src="{{ conv_user.avatar.url }}" class="rounded-circle me-3" class="avatar-md" alt="Аватар">
                                         {% else %}
                                             <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
                                                 <span class="text-white">{{ conv_user.username|first|upper }}</span>
@@ -111,7 +111,7 @@
                                 <div class="mb-3 d-flex {% if message.sender == user %}flex-row-reverse{% else %}flex-row{% endif %} align-items-start message-item" data-message-id="{{ message.id }}">
                                     <div class="{% if message.sender == user %}ms-2{% else %}me-2{% endif %}" style="flex-shrink: 0;">
                                         {% if message.sender.avatar %}
-                                            <img src="{{ message.sender.avatar.url }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
+                                            <img src="{{ message.sender.avatar.url }}" class="rounded-circle" class="avatar-sm" alt="Аватар">
                                         {% else %}
                                             <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
                                                 <span class="text-white small">{{ message.sender.username|first|upper }}</span>
@@ -172,7 +172,7 @@
                 <div class="mb-3">
                     <div class="d-flex align-items-center mb-2">
                         {% if service.author.avatar %}
-                            <img src="{{ service.author.avatar.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
+                            <img src="{{ service.author.avatar.url }}" class="rounded-circle me-2" class="avatar-sm" alt="Аватар">
                         {% else %}
                             <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
                                 <span class="text-white small">{{ service.author.username|first|upper }}</span>
@@ -188,7 +188,7 @@
                     <div class="mb-3">
                         <div class="d-flex align-items-center mb-2">
                             {% if other_user.avatar %}
-                                <img src="{{ other_user.avatar.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
+                                <img src="{{ other_user.avatar.url }}" class="rounded-circle me-2" class="avatar-sm" alt="Аватар">
                             {% else %}
                                 <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
                                     <span class="text-white small">{{ other_user.username|first|upper }}</span>
@@ -204,7 +204,7 @@
                     <div class="mb-3">
                         <div class="d-flex align-items-center mb-2">
                             {% if conversation_user.avatar %}
-                                <img src="{{ conversation_user.avatar.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;" alt="Аватар">
+                                <img src="{{ conversation_user.avatar.url }}" class="rounded-circle me-2" class="avatar-sm" alt="Аватар">
                             {% else %}
                                 <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
                                     <span class="text-white small">{{ conversation_user.username|first|upper }}</span>
@@ -283,24 +283,6 @@
     </div>
 </div>
 
-<style>
-    .message-own {
-        background-color: #E8F5E9; /* Светло-зеленый */
-        color: #333;
-        border-radius: 18px 18px 18px 4px;
-    }
-    
-    .message-other {
-        background-color: #FFF4E6; /* Светло-оранжевый */
-        color: #333;
-        border-radius: 18px 18px 18px 4px;
-    }
-    
-    .message-content {
-        word-wrap: break-word;
-    }
-    
-</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

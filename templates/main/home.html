@@ -4,12 +4,12 @@
 {% block title %}Главная страница{% endblock %}
 
 {% block content %}
-<div class="task-header-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 100px 0 80px 0; margin: -32px calc(-50vw + 50%) 40px calc(-50vw + 50%); width: 100vw; position: relative;">
+<div class="task-header-gradient home">
     <div class="container px-5">
         <div class="text-center text-white">
             <h1 class="display-4">Поиск работы или исполнителя <br />в Крыму</h1>
             <p class="lead">Найди онлайн подработку или найди лучшего исполнителя</p>
-            <hr class="my-4" style="border-color: rgba(255, 255, 255, 0.3);">
+            <hr class="my-4 hr-white">
             
             {% if user.is_authenticated %}
                 <p>Рады видеть вас снова, <strong>{{ user.username }}</strong>!</p>
@@ -136,25 +136,25 @@
         <div class="row g-4">
             {% for service in latest_services %}
             <div class="col-md-6 col-lg-4">
-                <a href="{% url 'services:service_detail' service.get_public_slug %}" class="text-decoration-none" style="color: inherit;">
+                <a href="{% url 'services:service_detail' service.get_public_slug %}" class="text-decoration-none text-body">
                     {% if forloop.counter0 == 0 %}
-                    <div class="card h-100 shadow-sm service-card" style="transition: transform 0.3s ease, box-shadow 0.3s ease; border-radius: 15px; border: 2px solid #e9ecef !important; background-color: #E8F5E9; cursor: pointer;">
+                    <div class="card h-100 shadow-sm service-card service-card-color-1">
                     {% elif forloop.counter0 == 1 %}
-                    <div class="card h-100 shadow-sm service-card" style="transition: transform 0.3s ease, box-shadow 0.3s ease; border-radius: 15px; border: 2px solid #e9ecef !important; background-color: #FFF4E6; cursor: pointer;">
+                    <div class="card h-100 shadow-sm service-card service-card-color-2">
                     {% elif forloop.counter0 == 2 %}
-                    <div class="card h-100 shadow-sm service-card" style="transition: transform 0.3s ease, box-shadow 0.3s ease; border-radius: 15px; border: 2px solid #e9ecef !important; background-color: #E3F2FD; cursor: pointer;">
+                    <div class="card h-100 shadow-sm service-card service-card-color-3">
                     {% elif forloop.counter0 == 3 %}
-                    <div class="card h-100 shadow-sm service-card" style="transition: transform 0.3s ease, box-shadow 0.3s ease; border-radius: 15px; border: 2px solid #e9ecef !important; background-color: #F3E5F5; cursor: pointer;">
+                    <div class="card h-100 shadow-sm service-card service-card-color-4">
                     {% elif forloop.counter0 == 4 %}
-                    <div class="card h-100 shadow-sm service-card" style="transition: transform 0.3s ease, box-shadow 0.3s ease; border-radius: 15px; border: 2px solid #e9ecef !important; background-color: #FFF9E6; cursor: pointer;">
+                    <div class="card h-100 shadow-sm service-card service-card-color-5">
                     {% else %}
-                    <div class="card h-100 shadow-sm service-card" style="transition: transform 0.3s ease, box-shadow 0.3s ease; border-radius: 15px; border: 2px solid #e9ecef !important; background-color: #E0F2F1; cursor: pointer;">
+                    <div class="card h-100 shadow-sm service-card service-card-color-6">
                     {% endif %}
                         <div class="card-body d-flex flex-column p-4">
-                            <h4 class="card-title fw-bold mb-3" style="color: #667eea; font-size: 1.25rem;">
+                            <h4 class="card-title fw-bold mb-3 service-card-title">
                                 {{ service.title }}
                             </h4>
-                            <p class="card-text" style="font-size: 1rem; color: #495057; line-height: 1.6;">{{ service.description|truncatechars:200 }}</p>
+                            <p class="card-text service-card-text">{{ service.description|truncatechars:200 }}</p>
                         </div>
                     </div>
                 </a>
@@ -172,15 +172,9 @@
     </div>
 </section>
 
-<style>
-    .service-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2) !important;
-    }
-</style>
 {% endif %}
 
-<section class="py-5 mt-5" style="background-color: #f8f9fa;">
+<section class="py-5 mt-5 section-bg-light">
     <div class="container">
         <div class="row mb-5">
             <div class="col-12 text-center">
@@ -298,7 +292,7 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <div class="d-flex align-items-start">
-                                    <i class="bi bi-piggy-bank-fill me-3 mt-1 text-brand-blue" style="font-size: 1.5rem;"></i>
+                                    <i class="bi bi-piggy-bank-fill me-3 mt-1 text-brand-blue feature-icon"></i>
                                     <div>
                                         <h5 class="fw-bold mb-2">Полностью бесплатно</h5>
                                         <p class="text-muted mb-0">Никаких скрытых комиссий за размещение или отклик.</p>
@@ -307,7 +301,7 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <div class="d-flex align-items-start">
-                                    <i class="bi bi-geo-alt-fill me-3 mt-1 text-brand-blue" style="font-size: 1.5rem;"></i>
+                                    <i class="bi bi-geo-alt-fill me-3 mt-1 text-brand-blue feature-icon"></i>
                                     <div>
                                         <h5 class="fw-bold mb-2">Фокус на Крым</h5>
                                         <p class="text-muted mb-0">Мы понимаем локальный рынок труда и помогаем именно вам.</p>
@@ -316,7 +310,7 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <div class="d-flex align-items-start">
-                                    <i class="bi bi-lightning-fill me-3 mt-1 text-brand-blue" style="font-size: 1.5rem;"></i>
+                                    <i class="bi bi-lightning-fill me-3 mt-1 text-brand-blue feature-icon"></i>
                                     <div>
                                         <h5 class="fw-bold mb-2">Простота и удобство</h5>
                                         <p class="text-muted mb-0">Интуитивно понятный интерфейс для быстрого поиска.</p>
@@ -325,7 +319,7 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <div class="d-flex align-items-start">
-                                    <i class="bi bi-shield-fill-check me-3 mt-1 text-brand-blue" style="font-size: 1.5rem;"></i>
+                                    <i class="bi bi-shield-fill-check me-3 mt-1 text-brand-blue feature-icon"></i>
                                     <div>
                                         <h5 class="fw-bold mb-2">Безопасность и отзывы</h5>
                                         <p class="text-muted mb-0">Система рейтингов помогает сделать правильный выбор.</p>
