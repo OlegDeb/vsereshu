@@ -2,6 +2,8 @@
 
 {% block title %}{% if selected_category_obj %}{{ selected_category_obj.name }}{% else %}Услуги{% endif %}{% endblock %}
 
+{% block description %}{% if selected_category_obj %}{{ selected_category_obj.description|default:selected_category_obj.name|truncatechars:100 }}{% else %}Список профессиональных услуг от проверенных исполнителей. Найдите специалиста для решения ваших задач.{% endif %}{% endblock %}
+
 {% block page_header %}
 <!-- Блок с градиентом и заголовком -->
 <div class="task-header-gradient">

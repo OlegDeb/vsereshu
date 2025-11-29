@@ -3,6 +3,8 @@
 
 {% block title %}Профиль - {{ profile_user.username }}{% endblock %}
 
+{% block description %}{% if profile_user.bio %}{{ profile_user.bio|truncatechars:100 }}{% else %}Профиль пользователя {{ profile_user.username }} на платформе ВСЁ-РЕШУ.{% endif %}{% endblock %}
+
 {% block page_header %}
 <!-- Блок с градиентом и заголовком -->
 <div class="task-header-gradient">

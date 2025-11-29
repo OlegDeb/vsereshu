@@ -2,6 +2,8 @@
 
 {% block title %}{{ article.title }}{% endblock %}
 
+{% block description %}{{ article.description|default:article.text|striptags|truncatechars:100 }}{% endblock %}
+
 {% block page_header %}
 <!-- Блок с градиентом и заголовком -->
 <div class="task-header-gradient">

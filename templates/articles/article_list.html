@@ -2,6 +2,8 @@
 
 {% block title %}{% if selected_category %}{{ selected_category.name }}{% else %}Статьи{% endif %}{% endblock %}
 
+{% block description %}{% if selected_category %}{{ selected_category.description|default:selected_category.name|truncatechars:100 }}{% else %}Список статей на различные темы. Найдите полезную информацию и советы.{% endif %}{% endblock %}
+
 {% block page_header %}
 <!-- Блок с градиентом и заголовком -->
 <div class="task-header-gradient">

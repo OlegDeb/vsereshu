@@ -2,6 +2,8 @@
 
 {% block title %}{% if selected_category_obj %}{{ selected_category_obj.name }}{% else %}Задачи{% endif %}{% endblock %}
 
+{% block description %}{% if selected_category_obj %}{{ selected_category_obj.description|default:selected_category_obj.name|truncatechars:100 }}{% else %}Список актуальных задач и заказов. Найдите подработку или разместите задание.{% endif %}{% endblock %}
+
 {% block page_header %}
 <!-- Блок с градиентом и заголовком -->
 <div class="task-header-gradient">
