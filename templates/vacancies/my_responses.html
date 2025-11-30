@@ -1,10 +1,10 @@
-{% extends "base.html" %}
+{% extends "base_profile.html" %}
 {% load static %}
 
 {% block title %}Мои отклики{% endblock %}
 {% block description %}Список вакансий, на которые вы откликнулись{% endblock %}
 
-{% block page_header %}
+{% block profile_page_header %}
 <!-- Блок с градиентом и заголовком -->
 <div class="task-header-gradient">
     <div class="container">
@@ -26,7 +26,7 @@
 </div>
 {% endblock %}
 
-{% block content %}
+{% block profile_content %}
 <div class="row">
     <div class="col-lg-12">
         {% if responses %}
