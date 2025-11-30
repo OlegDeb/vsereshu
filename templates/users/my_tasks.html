@@ -91,11 +91,11 @@
                                     </div>
                                     <div class="card-footer bg-transparent border-0">
                                         <div class="d-flex gap-2">
-                                            <a class="btn btn-outline-primary btn-sm flex-fill" href="{% url 'tasks:task_detail' task.get_public_slug %}">
+                                            <a class="btn btn-outline-primary btn-sm flex-fill" href="{% url 'tasks:task_detail' task.slug %}">
                                                 Подробнее
                                             </a>
                                             {% if not task.is_moderated and task.status != 'in_progress' and task.status != 'awaiting_confirmation' and task.status != 'completed' %}
-                                                <a class="btn btn-outline-secondary btn-sm" href="{% url 'tasks:edit_task' task.get_public_slug %}" title="Редактировать">
+                                                <a class="btn btn-outline-secondary btn-sm" href="{% url 'tasks:edit_task' task.slug %}" title="Редактировать">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
                                             {% endif %}
@@ -144,7 +144,7 @@
                                         </dl>
                                     </div>
                                     <div class="card-footer bg-transparent border-0">
-                                        <a class="btn btn-outline-primary btn-sm w-100" href="{% url 'tasks:task_detail' task.get_public_slug %}">
+                                        <a class="btn btn-outline-primary btn-sm w-100" href="{% url 'tasks:task_detail' task.slug %}">
                                             Подробнее
                                         </a>
                                     </div>

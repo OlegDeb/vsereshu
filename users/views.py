@@ -179,7 +179,7 @@ def my_services(request):
     return render(request, 'users/my_services.html', context)
 
 @login_required
-def my_vacancies(request):
+def user_my_vacancies(request):
     """Страница с вакансиями пользователя"""
     # Все вакансии пользователя
     vacancies = Vacancy.objects.filter(

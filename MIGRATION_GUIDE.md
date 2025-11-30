@@ -54,7 +54,7 @@ export DJANGO_SETTINGS_MODULE=config.settings_prod
 # Создайте миграции для всех приложений
 python manage.py makemigrations users
 python manage.py makemigrations categories
-python manage.py makemigrations regions
+python manage.py makemigrations regions'
 python manage.py makemigrations tasks
 python manage.py makemigrations services
 python manage.py makemigrations articles
