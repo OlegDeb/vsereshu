@@ -11,6 +11,7 @@ from .forms import CustomUserCreationForm, CustomUserChangeForm, ComplaintForm, 
 from .models import CustomUser, UserComplaint, UserWarning, UserBan
 from tasks.models import Task, TaskResponse
 from services.models import Service
+from vacancies.models import Vacancy, VacancyResponse
 
 def register(request):
     if request.method == 'POST':
@@ -98,6 +99,21 @@ def profile(request):
         author=request.user,
         is_active=True
     ).aggregate(total=models.Sum('orders_count'))['total'] or 0
+    # Статистика вакансий
+    total_vacancies = Vacancy.objects.filter(
+        author=request.user,
+        is_active=True
+    ).count()
+
+    moderated_vacancies = Vacancy.objects.filter(
+        author=request.user,
+        is_active=True,
+        is_moderated=True
+    ).count()
+
+    vacancy_responses_count = VacancyResponse.objects.filter(
+        vacancy__author=request.user
+    ).count()
     
     context = {
         'user_days': user_days,
@@ -112,6 +128,9 @@ def profile(request):
         'moderated_services': moderated_services,
         'total_services_views': total_services_views,
         'total_services_orders': total_services_orders,
+        'total_vacancies': total_vacancies,
+        'moderated_vacancies': moderated_vacancies,
+        'vacancy_responses_count': vacancy_responses_count,
     }
     return render(request, 'users/profile.html', context)
 
@@ -158,6 +177,20 @@ def my_services(request):
         'services': services,
     }
     return render(request, 'users/my_services.html', context)
+
+@login_required
+def my_vacancies(request):
+    """Страница с вакансиями пользователя"""
+    # Все вакансии пользователя
+    vacancies = Vacancy.objects.filter(
+        author=request.user,
+        is_active=True
+    ).select_related("specialty").order_by("-created_at")
+    
+    context = {
+        'vacancies': vacancies,
+    }
+    return render(request, 'users/my_vacancies.html', context)
 
 @login_required
 def profile_edit(request):

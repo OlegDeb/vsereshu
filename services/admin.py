@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from slugify import slugify
 from .models import Service, ServiceMessage
 
 

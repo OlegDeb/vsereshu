@@ -87,7 +87,7 @@ def unread_messages(request):
                 'other_user': other_user,
                 'last_message': msg,
                 'unread_count': 1,
-                'url': f'/services/{service.get_public_slug()}/messages/?user_id={other_user.id}',
+                'url': f'/services/{service.slug}/messages/?user_id={other_user.id}',
             }
         else:
             service_messages_dict[key]['unread_count'] += 1

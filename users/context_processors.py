@@ -2,6 +2,7 @@
 from django.utils import timezone
 from django.db.models import Q
 from .models import UserWarning, UserBan, UserComplaint
+from vacancies.models import VacancyResponse
 
 
 def notifications(request):
@@ -37,10 +38,17 @@ def notifications(request):
         is_read_by_complainant=False
     ).count()
     
+    # Получаем непрочитанные отклики на вакансии пользователя
+    unread_vacancy_responses_count = VacancyResponse.objects.filter(
+        vacancy__author=user,
+        is_read=False
+    ).count()
+    
     # Общее количество непрочитанных уведомлений
-    total_count = unread_warnings_count + active_bans_count + unread_complaint_responses_count
+    total_count = unread_warnings_count + active_bans_count + unread_complaint_responses_count + unread_vacancy_responses_count
     
     return {
         'unread_notifications_count': total_count,
+        'unread_vacancy_responses_count': unread_vacancy_responses_count,
     }
 

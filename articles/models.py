@@ -29,7 +29,7 @@ class Article(models.Model):
 	text = models.TextField("Текст")
 	public = models.BooleanField(verbose_name='Публиковать на сайте', default=True)
 	sidebar = models.BooleanField(verbose_name='Популярная статья', default=False)
-	slug = models.SlugField("url", max_length=250)
+	slug = models.SlugField("url", max_length=250, unique=True)
 	views = models.PositiveIntegerField(verbose_name='Просмотры', default=0)
 
 	image_mini = ImageSpecField(source='image', processors=[ResizeToFill(65, 65)], format='JPEG', options={'quality': 80})

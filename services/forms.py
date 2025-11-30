@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelChoiceField
-from django.utils.text import slugify
+from slugify import slugify
 from .models import Service, ServiceMessage
 from categories.models import Category, CategorySection
 from regions.models import City, Region

@@ -1,4 +1,5 @@
 from django.contrib import admin
+from slugify import slugify
 
 from .models import Article, Category
 

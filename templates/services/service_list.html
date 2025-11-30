@@ -42,7 +42,7 @@
             <div class="row g-4">
                 {% for service in services %}
                     <div class="col-12">
-                        <a href="{% url 'services:service_detail' service.get_public_slug %}" class="text-decoration-none">
+                        <a href="{% url 'services:service_detail' service.slug %}" class="text-decoration-none">
                             <div class="card shadow-sm service-card" style="transition: transform 0.3s ease, box-shadow 0.3s ease; border-radius: 15px; border: 2px solid #e9ecef !important; background-color: #ffffff;">
                                 <div class="card-body p-4">
                                     <!-- Просмотры, дата, категория (сверху) -->

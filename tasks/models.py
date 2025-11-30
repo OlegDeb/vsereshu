@@ -102,11 +102,8 @@ class Task(models.Model):
     def __str__(self) -> str:
         return self.title
 
-    def get_public_slug(self) -> str:
-        return f"{self.pk}-{self.slug}"
-
     def get_absolute_url(self) -> str:
-        return reverse("tasks:task_detail", args=(self.get_public_slug(),))
+        return reverse("tasks:task_detail", args=(self.slug,))
 
 
 class TaskResponse(models.Model):

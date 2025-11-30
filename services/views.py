@@ -112,7 +112,7 @@ def create_service(request):
         if form.is_valid():
             service = form.save(author=request.user)
             messages.success(request, "Услуга успешно создана и отправлена на модерацию!")
-            return redirect("services:service_detail", slug=service.get_public_slug())
+            return redirect("services:service_detail", slug=service.slug)
     else:
         form = ServiceForm()
     
@@ -122,20 +122,15 @@ def create_service(request):
 @login_required
 def edit_service(request, slug: str):
     """Редактирование услуги"""
-    id_part, sep, slug_part = slug.partition("-")
-    if sep == "" or not id_part.isdigit():
-        raise Http404("Service not found")
-
     service = get_object_or_404(
         Service.objects.select_related("author"),
-        pk=int(id_part),
-        slug=slug_part,
+        slug=slug,
     )
     
     # Проверяем, что пользователь - автор услуги
     if request.user != service.author:
         messages.error(request, "У вас нет прав для редактирования этой услуги.")
-        return redirect("services:service_detail", slug=service.get_public_slug())
+        return redirect("services:service_detail", slug=service.slug)
     
     if request.method == "POST":
         form = ServiceForm(request.POST, instance=service)
@@ -145,7 +140,7 @@ def edit_service(request, slug: str):
                 messages.success(request, "Услуга успешно обновлена!")
             else:
                 messages.success(request, "Услуга успешно обновлена и отправлена на модерацию!")
-            return redirect("services:service_detail", slug=service.get_public_slug())
+            return redirect("services:service_detail", slug=service.slug)
     else:
         form = ServiceForm(instance=service)
     
@@ -154,15 +149,10 @@ def edit_service(request, slug: str):
 
 def service_detail(request, slug: str):
     """Детальная страница услуги"""
-    id_part, sep, slug_part = slug.partition("-")
-    if sep == "" or not id_part.isdigit():
-        raise Http404("Service not found")
-
     # Получаем услугу, проверяя права доступа
     service = get_object_or_404(
         Service.objects.select_related("category", "city", "author"),
-        pk=int(id_part),
-        slug=slug_part,
+        slug=slug,
         is_active=True,
     )
     
@@ -269,14 +259,9 @@ def get_cities_by_region(request):
 @require_POST
 def send_service_message(request, slug: str):
     """Отправка сообщения автору услуги (AJAX)"""
-    id_part, sep, slug_part = slug.partition("-")
-    if sep == "" or not id_part.isdigit():
-        raise Http404("Service not found")
-
     service = get_object_or_404(
         Service.objects.select_related("author"),
-        pk=int(id_part),
-        slug=slug_part,
+        slug=slug,
         is_active=True,
     )
     
@@ -314,14 +299,9 @@ def send_service_message(request, slug: str):
 @login_required
 def service_messages(request, slug: str):
     """Просмотр диалога по услуге"""
-    id_part, sep, slug_part = slug.partition("-")
-    if sep == "" or not id_part.isdigit():
-        raise Http404("Service not found")
-
     service = get_object_or_404(
         Service.objects.select_related("author", "category", "city"),
-        pk=int(id_part),
-        slug=slug_part,
+        slug=slug,
         is_active=True,
     )
     
@@ -350,7 +330,7 @@ def service_messages(request, slug: str):
         
         if not has_messages:
             messages.error(request, "У вас нет доступа к этому диалогу.")
-            return redirect("services:service_detail", slug=service.get_public_slug())
+            return redirect("services:service_detail", slug=service.slug)
     
     # Получаем сообщения: для обычных пользователей - только их переписка, для админов - все
     if is_admin:
@@ -436,8 +416,8 @@ def service_messages(request, slug: str):
                     else:
                         messages.error(request, "Не удалось определить получателя.")
                         if conversation_user:
-                            return redirect(f"{reverse('services:service_messages', args=[service.get_public_slug()])}?user_id={conversation_user.id}")
-                        return redirect("services:service_detail", slug=service.get_public_slug())
+                            return redirect(f"{reverse('services:service_messages', args=[service.slug])}?user_id={conversation_user.pk}")
+                        return redirect("services:service_detail", slug=service.slug)
                 else:
                     # Обычный пользователь - отправляем автору услуги
                     message.recipient = service.author
@@ -445,8 +425,8 @@ def service_messages(request, slug: str):
             messages.success(request, "Сообщение отправлено!")
             # Редиректим обратно в тот же диалог, если был указан конкретный пользователь
             if conversation_user:
-                return redirect(f"{reverse('services:service_messages', args=[service.get_public_slug()])}?user_id={conversation_user.id}")
-            return redirect("services:service_messages", slug=service.get_public_slug())
+                return redirect(f"{reverse('services:service_messages', args=[service.slug])}?user_id={conversation_user.pk}")
+            return redirect("services:service_messages", slug=service.slug)
     
     # Для автора услуги получаем список всех диалогов, если не указан конкретный пользователь
     conversations_list = None

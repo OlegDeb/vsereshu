@@ -47,6 +47,15 @@
         <a href="{% url 'users:my_services' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'my_services' %}active{% endif %}">
             🛠️ Мои услуги
         </a>
+        <a href="{% url 'vacancies:my_vacancies' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'my_vacancies' %}active{% endif %}">
+            💼 Мои вакансии
+        </a>
+        <a href="{% url 'vacancies:my_responses' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'my_responses' %}active{% endif %}">
+            📨 Мои отклики
+        </a>
+        <a href="{% url 'vacancies:favorite_vacancies' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'favorite_vacancies' %}active{% endif %}">
+            ❤️ Избранные вакансии
+        </a>
         <a href="{% url 'users:profile_edit' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'profile_edit' %}active{% endif %}">
             ✏️ Редактировать профиль
         </a>

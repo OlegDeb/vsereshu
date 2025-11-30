@@ -47,7 +47,7 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h2 class="h5 mb-0">Описание задачи</h2>
                 {% if user.is_authenticated and user == task.author and task.status != 'in_progress' and task.status != 'awaiting_confirmation' and task.status != 'completed' %}
-                    <a href="{% url 'tasks:edit_task' task.get_public_slug %}" class="btn btn-sm btn-outline-primary">
+                    <a href="{% url 'tasks:edit_task' task.slug %}" class="btn btn-sm btn-outline-primary">
                         <i class="bi bi-pencil me-1"></i>Редактировать
                     </a>
                 {% endif %}
@@ -67,7 +67,7 @@
                         <h3 class="h5 mb-0">Откликнуться на задачу</h3>
                     </div>
                     <div class="card-body">
-                        <form method="post" action="{% url 'tasks:create_response' slug=task.get_public_slug %}">
+                        <form method="post" action="{% url 'tasks:create_response' slug=task.slug %}">
                             {% csrf_token %}
                             <div class="mb-3">
                                 {{ response_form.message.label_tag }}
@@ -111,7 +111,7 @@
                                 Перейти к общению
                             </a>
                             {% if is_executor and task.status == 'in_progress' %}
-                                <form method="post" action="{% url 'tasks:complete_task' slug=task.get_public_slug %}" class="d-inline">
+                                <form method="post" action="{% url 'tasks:complete_task' slug=task.slug %}" class="d-inline">
                                     {% csrf_token %}
                                     <button type="submit" class="btn btn-success">
                                         <i class="bi bi-check-circle me-1"></i>Завершить задачу
@@ -141,7 +141,7 @@
                             <h5 class="alert-heading mb-1">Задача ожидает вашего подтверждения</h5>
                             <p class="mb-0">Исполнитель завершил работу. Проверьте результат и примите работу.</p>
                         </div>
-                        <form method="post" action="{% url 'tasks:accept_task_completion' slug=task.get_public_slug %}" class="ms-3">
+                        <form method="post" action="{% url 'tasks:accept_task_completion' slug=task.slug %}" class="ms-3">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-success btn-lg">
                                 <i class="bi bi-check-circle me-1"></i>Принять работу
@@ -164,7 +164,7 @@
                             </div>
                             {% for response in responses %}
                                 {% if response.status == 'accepted' %}
-                                    <a href="{% url 'tasks:create_review' slug=task.get_public_slug user_id=response.candidate.id %}" class="btn btn-primary btn-lg ms-3">
+                                    <a href="{% url 'tasks:create_review' slug=task.slug user_id=response.candidate.id %}" class="btn btn-primary btn-lg ms-3">
                                         <i class="bi bi-star me-1"></i>Оставить отзыв
                                     </a>
                                 {% endif %}
@@ -180,7 +180,7 @@
                                 <h5 class="alert-heading mb-1">Оставьте отзыв о заказчике</h5>
                                 <p class="mb-0">Задача завершена. Пожалуйста, оставьте отзыв о заказчике.</p>
                             </div>
-                            <a href="{% url 'tasks:create_review' slug=task.get_public_slug user_id=task.author.id %}" class="btn btn-primary btn-lg ms-3">
+                            <a href="{% url 'tasks:create_review' slug=task.slug user_id=task.author.id %}" class="btn btn-primary btn-lg ms-3">
                                 <i class="bi bi-star me-1"></i>Оставить отзыв
                             </a>
                         </div>

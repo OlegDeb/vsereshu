@@ -93,11 +93,8 @@ class Service(models.Model):
     def __str__(self) -> str:
         return self.title
 
-    def get_public_slug(self) -> str:
-        return f"{self.pk}-{self.slug}"
-
     def get_absolute_url(self) -> str:
-        return reverse("services:service_detail", args=(self.get_public_slug(),))
+        return reverse("services:service_detail", args=(self.slug,))
 
 
 class ServiceMessage(models.Model):

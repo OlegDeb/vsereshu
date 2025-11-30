@@ -46,7 +46,7 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h2 class="h5 mb-0">Описание услуги</h2>
                 {% if user.is_authenticated and user == service.author %}
-                    <a href="{% url 'services:edit_service' service.get_public_slug %}" class="btn btn-sm btn-outline-primary">
+                    <a href="{% url 'services:edit_service' service.slug %}" class="btn btn-sm btn-outline-primary">
                         <i class="bi bi-pencil me-1"></i>Редактировать
                     </a>
                 {% endif %}
@@ -65,7 +65,7 @@
                 <div class="card shadow-sm mb-4">
                     <div class="card-body text-center">
                         <h3 class="h5 mb-3">У вас уже есть переписка с автором услуги</h3>
-                        <a href="{% url 'services:service_messages' service.get_public_slug %}" class="btn btn-primary btn-lg">
+                        <a href="{% url 'services:service_messages' service.slug %}" class="btn btn-primary btn-lg">
                             <i class="bi bi-chat-dots me-1"></i>Открыть диалог
                         </a>
                     </div>
@@ -102,7 +102,7 @@
                     </div>
                     <div class="card-body">
                         {% for conversation_user in conversations %}
-                            <a href="{% url 'services:service_messages' service.get_public_slug %}?user_id={{ conversation_user.id }}" class="text-decoration-none">
+                            <a href="{% url 'services:service_messages' service.slug %}?user_id={{ conversation_user.id }}" class="text-decoration-none">
                                 <div class="card mb-3 border conversation-card" style="transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: pointer;">
                                     <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-start mb-2">
@@ -132,7 +132,7 @@
                                                 Нет сообщений
                                             {% endif %}
                                         </small>
-                                        <a href="{% url 'services:service_messages' service.get_public_slug %}?user_id={{ conversation_user.id }}" class="text-decoration-none">
+                                        <a href="{% url 'services:service_messages' service.slug %}?user_id={{ conversation_user.id }}" class="text-decoration-none">
                                             <i class="bi bi-arrow-right"></i>
                                         </a>
                                     </div>
@@ -270,7 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const messageForm = document.getElementById('service-message-form');
     const messageInput = document.getElementById('id_content');
     const sendButton = document.getElementById('send-service-message-button');
-    const sendMessageUrl = '{% url "services:send_service_message" slug=service.get_public_slug %}';
+    const sendMessageUrl = '{% url "services:send_service_message" slug=service.slug %}';
     
     messageForm.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -299,7 +299,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 // Перенаправляем на страницу диалога
-                window.location.href = '{% url "services:service_messages" slug=service.get_public_slug %}';
+                window.location.href = '{% url "services:service_messages" slug=service.slug %}';
             } else {
                 alert('Ошибка при отправке сообщения: ' + (data.error || 'Неизвестная ошибка'));
             }

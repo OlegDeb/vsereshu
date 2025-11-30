@@ -30,13 +30,13 @@
                     <div class="d-none d-lg-flex">
                         <ul class="navbar-nav">
                             <li class="nav-item">
-                                <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">Главная</a>
-                            </li>
-                            <li class="nav-item">
                                 <a class="nav-link {% if request.resolver_match.namespace == 'tasks' %}active{% endif %}" href="{% url 'tasks:task_list' %}">Задачи</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link {% if request.resolver_match.namespace == 'services' %}active{% endif %}" href="{% url 'services:service_list' %}">Услуги</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.resolver_match.namespace == 'vacancies' %}active{% endif %}" href="{% url 'vacancies:vacancy_list' %}">Вакансии</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link {% if request.resolver_match.namespace == 'pages' %}active{% endif %}" href="{% url 'pages:page_list' %}">Информация</a>
@@ -64,6 +64,21 @@
                                     <span class="position-absolute badge rounded-pill bg-warning badge-notification" id="notifications-badge">
                                         {{ unread_notifications_count }}
                                         {% if unread_notifications_count > 99 %}
+                                            <span class="visually-hidden">99+</span>
+                                        {% endif %}
+                                    </span>
+                                {% endif %}
+                            </a>
+                        </div>
+                        
+                        <!-- Иконка откликов на вакансии -->
+                        <div class="nav-item">
+                            <a class="nav-link position-relative nav-link-icon" href="{% url 'vacancies:my_vacancies' %}">
+                                <i class="bi bi-briefcase fs-5"></i>
+                                {% if unread_vacancy_responses_count > 0 %}
+                                    <span class="position-absolute badge rounded-pill bg-success badge-notification" id="vacancy-responses-badge">
+                                        {{ unread_vacancy_responses_count }}
+                                        {% if unread_vacancy_responses_count > 99 %}
                                             <span class="visually-hidden">99+</span>
                                         {% endif %}
                                     </span>
@@ -168,6 +183,11 @@
                                         ➕ Создать услугу
                                     </a>
                                 </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'vacancies:create_vacancy' %}">
+                                        ➕ Создать вакансию
+                                    </a>
+                                </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <a class="dropdown-item" href="{% url 'users:profile' %}">
@@ -215,13 +235,13 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav d-lg-none">
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">Главная</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.namespace == 'tasks' %}active{% endif %}" href="{% url 'tasks:task_list' %}">Задачи</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.namespace == 'services' %}active{% endif %}" href="{% url 'services:service_list' %}">Услуги</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.namespace == 'vacancies' %}active{% endif %}" href="{% url 'vacancies:vacancy_list' %}">Вакансии</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.namespace == 'pages' %}active{% endif %}" href="{% url 'pages:page_list' %}">Информация</a>
@@ -339,5 +359,6 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

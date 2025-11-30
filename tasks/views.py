@@ -106,7 +106,7 @@ def create_task(request):
         if form.is_valid():
             task = form.save(author=request.user)
             messages.success(request, "Задача успешно создана и отправлена на модерацию!")
-            return redirect("tasks:task_detail", slug=task.get_public_slug())
+            return redirect("tasks:task_detail", slug=task.slug)
     else:
         form = TaskForm()
     
@@ -116,33 +116,28 @@ def create_task(request):
 @login_required
 def edit_task(request, slug: str):
     """Редактирование задачи"""
-    id_part, sep, slug_part = slug.partition("-")
-    if sep == "" or not id_part.isdigit():
-        raise Http404("Task not found")
-
     task = get_object_or_404(
         Task.objects.select_related("author"),
-        pk=int(id_part),
-        slug=slug_part,
+        slug=slug,
     )
     
     # Проверяем, что пользователь - автор задачи
     if request.user != task.author:
         messages.error(request, "У вас нет прав для редактирования этой задачи.")
-        return redirect("tasks:task_detail", slug=task.get_public_slug())
+        return redirect("tasks:task_detail", slug=task.slug)
     
     # Проверяем, что задача не в работе
     if task.status == Task.Status.IN_PROGRESS:
         messages.error(request, "Задачу нельзя редактировать, пока она находится в работе.")
-        return redirect("tasks:task_detail", slug=task.get_public_slug())
+        return redirect("tasks:task_detail", slug=task.slug)
     
     if task.status == Task.Status.AWAITING_CONFIRMATION:
         messages.error(request, "Задачу нельзя редактировать, пока она ожидает подтверждения.")
-        return redirect("tasks:task_detail", slug=task.get_public_slug())
+        return redirect("tasks:task_detail", slug=task.slug)
     
     if task.status == Task.Status.COMPLETED:
         messages.error(request, "Завершенную задачу нельзя редактировать.")
-        return redirect("tasks:task_detail", slug=task.get_public_slug())
+        return redirect("tasks:task_detail", slug=task.slug)
     
     if request.method == "POST":
         form = TaskForm(request.POST, instance=task)
@@ -152,7 +147,7 @@ def edit_task(request, slug: str):
                 messages.success(request, "Задача успешно обновлена!")
             else:
                 messages.success(request, "Задача успешно обновлена и отправлена на модерацию!")
-            return redirect("tasks:task_detail", slug=task.get_public_slug())
+            return redirect("tasks:task_detail", slug=task.slug)
     else:
         form = TaskForm(instance=task)
     
@@ -160,15 +155,10 @@ def edit_task(request, slug: str):
 
 
 def task_detail(request, slug: str):
-    id_part, sep, slug_part = slug.partition("-")
-    if sep == "" or not id_part.isdigit():
-        raise Http404("Task not found")
-
     # Получаем задачу, проверяя права доступа
     task = get_object_or_404(
         Task.objects.select_related("category", "city", "author"),
-        pk=int(id_part),
-        slug=slug_part,
+        slug=slug,
         is_active=True,
     )
     
@@ -289,14 +279,9 @@ def task_detail(request, slug: str):
 @login_required
 def create_response(request, slug: str):
     """Создание отклика на задачу"""
-    id_part, sep, slug_part = slug.partition("-")
-    if sep == "" or not id_part.isdigit():
-        raise Http404("Task not found")
-
     task = get_object_or_404(
         Task.objects.select_related("author"),
-        pk=int(id_part),
-        slug=slug_part,
+        slug=slug,
         is_active=True,
         is_moderated=True,  # Откликаться можно только на проверенные задачи
     )
@@ -304,7 +289,7 @@ def create_response(request, slug: str):
     # Проверяем, что пользователь не является автором задачи
     if task.author == request.user:
         messages.error(request, "Вы не можете откликнуться на свою задачу.")
-        return redirect("tasks:task_detail", slug=task.get_public_slug())
+        return redirect("tasks:task_detail", slug=task.slug)
     
     # Проверяем, нет ли уже отклика от этого пользователя
     existing_response = TaskResponse.objects.filter(
@@ -345,7 +330,7 @@ def response_detail(request, response_id: int):
     # Проверяем права доступа: только автор задачи или кандидат могут видеть отклик
     if request.user != response.task.author and request.user != response.candidate:
         messages.error(request, "У вас нет доступа к этому отклику.")
-        return redirect("tasks:task_detail", slug=response.task.get_public_slug())
+        return redirect("tasks:task_detail", slug=response.task.slug)
     
     # Получаем все сообщения в этом отклике
     message_list = Message.objects.filter(
@@ -436,7 +421,7 @@ def update_response_status(request, response_id: int):
     # Только автор задачи может изменять статус отклика
     if request.user != response.task.author:
         messages.error(request, "У вас нет прав для изменения статуса отклика.")
-        return redirect("tasks:task_detail", slug=response.task.get_public_slug())
+        return redirect("tasks:task_detail", slug=response.task.slug)
     
     new_status = request.POST.get("status")
     if new_status in [TaskResponse.Status.ACCEPTED.value, TaskResponse.Status.REJECTED.value]:
@@ -465,21 +450,16 @@ def update_response_status(request, response_id: int):
     if redirect_to == "response_detail":
         return redirect("tasks:response_detail", response_id=response.pk)
     else:
-        return redirect("tasks:task_detail", slug=response.task.get_public_slug())
+        return redirect("tasks:task_detail", slug=response.task.slug)
 
 
 @login_required
 @require_POST
 def complete_task(request, slug: str):
     """Завершение задачи исполнителем"""
-    id_part, sep, slug_part = slug.partition("-")
-    if sep == "" or not id_part.isdigit():
-        raise Http404("Task not found")
-
     task = get_object_or_404(
         Task.objects.select_related("author"),
-        pk=int(id_part),
-        slug=slug_part,
+        slug=slug,
         is_active=True,
     )
     
@@ -492,49 +472,44 @@ def complete_task(request, slug: str):
     
     if not accepted_response:
         messages.error(request, "У вас нет прав для завершения этой задачи.")
-        return redirect("tasks:task_detail", slug=task.get_public_slug())
+        return redirect("tasks:task_detail", slug=task.slug)
     
     # Проверяем, что задача еще не завершена и не ожидает подтверждения
     if task.status == Task.Status.COMPLETED:
         messages.info(request, "Задача уже завершена.")
-        return redirect("tasks:task_detail", slug=task.get_public_slug())
+        return redirect("tasks:task_detail", slug=task.slug)
     
     if task.status == Task.Status.AWAITING_CONFIRMATION:
         messages.info(request, "Задача уже ожидает подтверждения заказчиком.")
-        return redirect("tasks:task_detail", slug=task.get_public_slug())
+        return redirect("tasks:task_detail", slug=task.slug)
     
     # Меняем статус задачи на "Ожидает подтверждения"
     task.status = Task.Status.AWAITING_CONFIRMATION
     task.save()
     
     messages.success(request, "Задача отправлена на подтверждение заказчику!")
-    return redirect("tasks:task_detail", slug=task.get_public_slug())
+    return redirect("tasks:task_detail", slug=task.slug)
 
 
 @login_required
 @require_POST
 def accept_task_completion(request, slug: str):
     """Принятие выполненной работы заказчиком"""
-    id_part, sep, slug_part = slug.partition("-")
-    if sep == "" or not id_part.isdigit():
-        raise Http404("Task not found")
-
     task = get_object_or_404(
         Task.objects.select_related("author"),
-        pk=int(id_part),
-        slug=slug_part,
+        slug=slug,
         is_active=True,
     )
     
     # Проверяем, что пользователь - автор задачи
     if request.user != task.author:
         messages.error(request, "У вас нет прав для принятия этой задачи.")
-        return redirect("tasks:task_detail", slug=task.get_public_slug())
+        return redirect("tasks:task_detail", slug=task.slug)
     
     # Проверяем, что задача ожидает подтверждения
     if task.status != Task.Status.AWAITING_CONFIRMATION:
         messages.error(request, "Задача не ожидает подтверждения.")
-        return redirect("tasks:task_detail", slug=task.get_public_slug())
+        return redirect("tasks:task_detail", slug=task.slug)
     
     # Меняем статус задачи на "Выполнена"
     task.status = Task.Status.COMPLETED
@@ -557,23 +532,18 @@ def accept_task_completion(request, slug: str):
         if not existing_review:
             # Перенаправляем на форму отзыва
             messages.success(request, "Работа принята! Пожалуйста, оставьте отзыв об исполнителе.")
-            return redirect("tasks:create_review", slug=task.get_public_slug(), user_id=accepted_response.candidate.id)
+            return redirect("tasks:create_review", slug=task.slug, user_id=accepted_response.candidate.id)
     
     messages.success(request, "Работа принята! Задача завершена.")
-    return redirect("tasks:task_detail", slug=task.get_public_slug())
+    return redirect("tasks:task_detail", slug=task.slug)
 
 
 @login_required
 def create_review(request, slug: str, user_id: int):
     """Создание отзыва после завершения задачи"""
-    id_part, sep, slug_part = slug.partition("-")
-    if sep == "" or not id_part.isdigit():
-        raise Http404("Task not found")
-
     task = get_object_or_404(
         Task.objects.select_related("author"),
-        pk=int(id_part),
-        slug=slug_part,
+        slug=slug,
         is_active=True,
     )
     
@@ -586,7 +556,7 @@ def create_review(request, slug: str, user_id: int):
     # Проверяем, что задача завершена
     if task.status != Task.Status.COMPLETED:
         messages.error(request, "Отзыв можно оставить только после завершения задачи.")
-        return redirect("tasks:task_detail", slug=task.get_public_slug())
+        return redirect("tasks:task_detail", slug=task.slug)
     
     # Проверяем, что пользователь может оставить отзыв
     # Заказчик может оставить отзыв исполнителю, исполнитель - заказчику
@@ -599,7 +569,7 @@ def create_review(request, slug: str, user_id: int):
     
     if not (is_author or is_executor):
         messages.error(request, "У вас нет прав для оставления отзыва по этой задаче.")
-        return redirect("tasks:task_detail", slug=task.get_public_slug())
+        return redirect("tasks:task_detail", slug=task.slug)
     
     # Проверяем, что reviewed_user - это либо автор (если отзыв от исполнителя), либо исполнитель (если отзыв от автора)
     if is_author:
@@ -611,12 +581,12 @@ def create_review(request, slug: str, user_id: int):
         ).first()
         if not accepted_response:
             messages.error(request, "Неверный пользователь для отзыва.")
-            return redirect("tasks:task_detail", slug=task.get_public_slug())
+            return redirect("tasks:task_detail", slug=task.slug)
     else:
         # Исполнитель оставляет отзыв заказчику
         if reviewed_user != task.author:
             messages.error(request, "Неверный пользователь для отзыва.")
-            return redirect("tasks:task_detail", slug=task.get_public_slug())
+            return redirect("tasks:task_detail", slug=task.slug)
     
     # Проверяем, не оставлен ли уже отзыв
     existing_review = Review.objects.filter(
@@ -627,7 +597,7 @@ def create_review(request, slug: str, user_id: int):
     
     if existing_review:
         messages.info(request, "Вы уже оставили отзыв по этой задаче.")
-        return redirect("tasks:task_detail", slug=task.get_public_slug())
+        return redirect("tasks:task_detail", slug=task.slug)
     
     if request.method == "POST":
         form = ReviewForm(request.POST)
@@ -663,7 +633,7 @@ def create_review(request, slug: str, user_id: int):
                 else:
                     messages.success(request, "Отзыв успешно оставлен!")
             
-            return redirect("tasks:task_detail", slug=task.get_public_slug())
+            return redirect("tasks:task_detail", slug=task.slug)
     else:
         form = ReviewForm()
     

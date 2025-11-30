@@ -188,7 +188,7 @@
 
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">{% if is_edit %}Сохранить изменения{% else %}Создать услугу{% endif %}</button>
-                        <a href="{% if is_edit and service %}{% url 'services:service_detail' service.get_public_slug %}{% else %}{% url 'services:service_list' %}{% endif %}" class="btn btn-secondary">Отмена</a>
+                        <a href="{% if is_edit and service %}{% url 'services:service_detail' service.slug %}{% else %}{% url 'services:service_list' %}{% endif %}" class="btn btn-secondary">Отмена</a>
                     </div>
                 </form>
             </div>

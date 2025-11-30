@@ -17,7 +17,7 @@
                         <a href="{% url 'services:service_list' %}" class="text-white text-decoration-none">Услуги</a>
                     </li>
                     <li class="breadcrumb-item">
-                        <a href="{% url 'services:service_detail' slug=service.get_public_slug %}" class="text-white text-decoration-none">{{ service.title|truncatewords:3 }}</a>
+                        <a href="{% url 'services:service_detail' slug=service.slug %}" class="text-white text-decoration-none">{{ service.title|truncatewords:3 }}</a>
                     </li>
                     <li class="breadcrumb-item active text-white" aria-current="page">Общение</li>
                 </ol>
@@ -43,7 +43,7 @@
         <!-- Кнопка возврата к списку диалогов (если открыт конкретный диалог) -->
         {% if user.is_authenticated and user == service.author and conversation_user %}
             <div class="mb-3">
-                <a href="{% url 'services:service_messages' service.get_public_slug %}" class="btn btn-outline-secondary btn-sm">
+                <a href="{% url 'services:service_messages' service.slug %}" class="btn btn-outline-secondary btn-sm">
                     <i class="bi bi-arrow-left me-1"></i>К списку диалогов
                 </a>
             </div>
@@ -86,7 +86,7 @@
                                             Нет сообщений
                                         {% endif %}
                                     </small>
-                                    <a href="{% url 'services:service_messages' service.get_public_slug %}?user_id={{ conv_user.id }}" class="btn btn-sm btn-primary">
+                                    <a href="{% url 'services:service_messages' service.slug %}?user_id={{ conv_user.id }}" class="btn btn-sm btn-primary">
                                         <i class="bi bi-chat-dots me-1"></i>Открыть диалог
                                     </a>
                                 </div>
@@ -251,7 +251,7 @@
             <div class="card-body">
                 <h3 class="h5">Информация</h3>
                 <p class="mb-2"><strong>Услуга:</strong></p>
-                <p class="mb-3"><a href="{% url 'services:service_detail' slug=service.get_public_slug %}">{{ service.title }}</a></p>
+                <p class="mb-3"><a href="{% url 'services:service_detail' slug=service.slug %}">{{ service.title }}</a></p>
                 
                 <p class="mb-2"><strong>Дата размещения:</strong></p>
                 <p class="mb-0">{{ service.created_at|date:"d E Y в H:i" }}</p>
@@ -276,7 +276,7 @@
         
         <!-- Кнопка возврата к услуге -->
         <div class="mt-3">
-            <a href="{% url 'services:service_detail' slug=service.get_public_slug %}" class="btn btn-primary w-100 d-flex align-items-center justify-content-center" style="padding: 12px; font-weight: 500; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <a href="{% url 'services:service_detail' slug=service.slug %}" class="btn btn-primary w-100 d-flex align-items-center justify-content-center" style="padding: 12px; font-weight: 500; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                 <i class="bi bi-arrow-left me-2"></i>К услуге
             </a>
         </div>

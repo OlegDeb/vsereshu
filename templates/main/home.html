@@ -130,7 +130,7 @@
         <div class="row g-4">
             {% for service in latest_services %}
             <div class="col-md-6 col-lg-4">
-                <a href="{% url 'services:service_detail' service.get_public_slug %}" class="text-decoration-none text-body">
+                <a href="{% url 'services:service_detail' service.slug %}" class="text-decoration-none text-body">
                     {% if forloop.counter0 == 0 %}
                     <div class="card h-100 shadow-sm service-card service-card-color-1">
                     {% elif forloop.counter0 == 1 %}

@@ -1,0 +1,97 @@
+<!-- templates/users/my_vacancies.html -->
+{% extends 'base_profile.html' %}
+
+{% block profile_page_header %}
+<!-- Блок с градиентом и заголовком -->
+<div class="task-header-gradient">
+    <div class="container">
+        <div class="text-center text-white">
+            <h1 class="display-5 fw-bold mb-3">Мои вакансии</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb justify-content-center mb-0 breadcrumb-header">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'home' %}" class="text-white text-decoration-none">Главная</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'users:profile' %}" class="text-white text-decoration-none">Профиль</a>
+                    </li>
+                    <li class="breadcrumb-item active text-white" aria-current="page">Мои вакансии</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block profile_content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-end">
+        <a href="{% url 'vacancies:create_vacancy' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle me-1"></i>Создать вакансию
+        </a>
+    </div>
+    <div class="card-body">
+        {% if vacancies %}
+            <div class="row row-cols-1 row-cols-md-2 g-4">
+                {% for vacancy in vacancies %}
+                    <div class="col">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="card-title mb-2">{{ vacancy.title }}</h6>
+                                <p class="text-muted small mb-2">
+                                    {{ vacancy.created_at|date:"d E Y" }} ·
+                                    {% if not vacancy.is_moderated %}
+                                        <span class="badge bg-warning">
+                                            <i class="bi bi-clock-history me-1"></i>На модерации
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle me-1"></i>Опубликована
+                                        </span>
+                                    {% endif %}
+                                </p>
+                                <p class="card-text small">{{ vacancy.description|truncatewords:30 }}</p>
+                                <dl class="row small mb-0">
+                                    <dt class="col-sm-5">Специальность:</dt>
+                                    <dd class="col-sm-7">{{ vacancy.specialty.name }}</dd>
+                                    <dt class="col-sm-5">Опыт работы:</dt>
+                                    <dd class="col-sm-7">{{ vacancy.get_experience_display }}</dd>
+                                    <dt class="col-sm-5">Тип занятости:</dt>
+                                    <dd class="col-sm-7">{{ vacancy.get_employment_type_display }}</dd>
+                                    <dt class="col-sm-5">Характер работы:</dt>
+                                    <dd class="col-sm-7">{{ vacancy.get_work_nature_display }}</dd>
+                                    <dt class="col-sm-5">Зарплата:</dt>
+                                    <dd class="col-sm-7">{{ vacancy.salary|floatformat:0 }} ₽</dd>
+                                    <dt class="col-sm-5">Место работы:</dt>
+                                    <dd class="col-sm-7">{{ vacancy.location }}</dd>
+                                    <dt class="col-sm-5">Откликов:</dt>
+                                    <dd class="col-sm-7">{{ vacancy.responses.count }}</dd>
+                                </dl>
+                            </div>
+                            <div class="card-footer bg-transparent border-0">
+                                <div class="d-flex gap-2">
+                                    <a class="btn btn-outline-primary btn-sm flex-fill" href="{% url 'vacancies:vacancy_detail' vacancy.pk %}">
+                                        Подробнее
+                                    </a>
+                                    {% if not vacancy.is_moderated %}
+                                        <a class="btn btn-outline-secondary btn-sm" href="{% url 'vacancies:edit_vacancy' vacancy.pk %}" title="Редактировать">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <p class="text-muted mb-3">У вас пока нет вакансий.</p>
+                <a href="{% url 'vacancies:create_vacancy' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i>Создать первую вакансию
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

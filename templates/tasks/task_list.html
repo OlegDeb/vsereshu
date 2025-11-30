@@ -42,7 +42,7 @@
         {% if tasks %}
             <div class="list-group">
                 {% for task in tasks %}
-                    <div class="list-group-item border rounded mb-3 shadow-sm p-4 task-card" style="background-color: #ffffff; border-width: 2px !important; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;" onclick="window.location.href='{% url 'tasks:task_detail' task.get_public_slug %}'">
+                    <div class="list-group-item border rounded mb-3 shadow-sm p-4 task-card" style="background-color: #ffffff; border-width: 2px !important; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;" onclick="window.location.href='{% url 'tasks:task_detail' task.slug %}'">
                         <div class="row g-0">
                             <!-- Левая часть: заголовок и описание -->
                             <div class="col-md-9 pe-md-2">

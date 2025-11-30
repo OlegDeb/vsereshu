@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelChoiceField
-from django.utils.text import slugify
+from slugify import slugify
 from .models import Task, TaskResponse, Message, Review
 from categories.models import Category, CategorySection
 from regions.models import City, Region
@@ -264,6 +264,7 @@ class TaskForm(forms.ModelForm):
         
         # Генерируем slug из title, если его нет
         if not task.slug:
+            # Создаем базовый слаг из заголовка с транслитерацией кириллицы
             base_slug = slugify(task.title)
             slug = base_slug
             counter = 1

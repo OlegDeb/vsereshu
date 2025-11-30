@@ -614,6 +614,7 @@ footer {
     padding: 100px 0 80px 0;
 }
 
+
 /* Breadcrumb стили */
 .breadcrumb-header {
     background-color: rgba(255, 255, 255, 0.2);
@@ -687,6 +688,11 @@ footer {
 .badge-message {
     top: 2px;
     right: -5px;
+}
+
+.gradient-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: none !important;
 }
 
 /* Message элементы */

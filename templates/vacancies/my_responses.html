@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Мои отклики{% endblock %}
+{% block description %}Список вакансий, на которые вы откликнулись{% endblock %}
+
+{% block page_header %}
+<!-- Блок с градиентом и заголовком -->
+<div class="task-header-gradient">
+    <div class="container">
+        <div class="text-center text-white">
+            <h1 class="display-5 fw-bold mb-3">Мои отклики</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb justify-content-center mb-0 breadcrumb-header">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'home' %}" class="text-white text-decoration-none">Главная</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'users:profile' %}" class="text-white text-decoration-none">Профиль</a>
+                    </li>
+                    <li class="breadcrumb-item active text-white" aria-current="page">Мои отклики</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        {% if responses %}
+            <div class="row g-4">
+                {% for response in responses %}
+                    <div class="col-12">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h5 class="card-title mb-3">
+                                            <a href="{% url 'vacancies:vacancy_detail' response.vacancy.slug %}" class="text-decoration-none">
+                                                {{ response.vacancy.title }}
+                                            </a>
+                                        </h5>
+                                        
+                                        <div class="d-flex flex-wrap gap-3 mb-3">
+                                            <span class="badge bg-light text-dark">
+                                                <i class="bi bi-briefcase me-1"></i>{{ response.vacancy.specialty.name }}
+                                            </span>
+                                            <span class="badge bg-light text-dark">
+                                                <i class="bi bi-geo-alt me-1"></i>{{ response.vacancy.location }}
+                                            </span>
+                                            <span class="badge bg-light text-dark">
+                                                <i class="bi bi-cash-coin me-1"></i>{{ response.vacancy.salary|floatformat:0 }} руб.
+                                            </span>
+                                            <span class="badge {% if response.is_read %}bg-success{% else %}bg-warning{% endif %} text-white">
+                                                <i class="bi bi-envelope{% if response.is_read %}-check{% endif %} me-1"></i>
+                                                {% if response.is_read %}Прочитано{% else %}Новое{% endif %}
+                                            </span>
+                                        </div>
+                                        
+                                        <h6>Ваше сопроводительное письмо:</h6>
+                                        <div class="bg-light p-3 rounded mb-3">
+                                            {{ response.cover_letter|linebreaks }}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <div class="card bg-light">
+                                            <div class="card-body">
+                                                <h6 class="card-title">Работодатель</h6>
+                                                <div class="d-flex align-items-center mb-3">
+                                                    {% if response.vacancy.author.avatar %}
+                                                        <img src="{{ response.vacancy.author.avatar.url }}" class="rounded-circle me-3" alt="Аватар" width="50" height="50">
+                                                    {% else %}
+                                                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                                            <span class="text-white">{{ response.vacancy.author.username|first|upper }}</span>
+                                                        </div>
+                                                    {% endif %}
+                                                    <div>
+                                                        <strong>{{ response.vacancy.author.get_full_name|default:response.vacancy.author.username }}</strong>
+                                                        <div class="small text-muted">Зарегистрирован {{ response.vacancy.author.date_joined|date:"d.m.Y" }}</div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="d-grid gap-2">
+                                                    <a href="{% url 'users:public_profile' response.vacancy.author.username %}" class="btn btn-outline-primary btn-sm">
+                                                        <i class="bi bi-person me-1"></i>Профиль работодателя
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                                    <small class="text-muted">
+                                        Отправлено: {{ response.created_at|date:"d.m.Y H:i" }}
+                                    </small>
+                                    <div>
+                                        <a href="{% url 'vacancies:vacancy_detail' response.vacancy.slug %}" class="btn btn-primary btn-sm">
+                                            <i class="bi bi-eye me-1"></i>Посмотреть вакансию
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>У вас пока нет откликов на вакансии</strong>
+                    <p class="mb-0 mt-2">Найдите интересные вакансии и отправьте свой первый отклик!</p>
+                </div>
+                <a href="{% url 'vacancies:vacancy_list' %}" class="btn btn-primary">
+                    <i class="bi bi-search me-1"></i>Найти вакансии
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.card {
+    border: none;
+    border-radius: 0.5rem;
+}
+
+.badge {
+    font-size: 0.8rem;
+    padding: 0.4em 0.6em;
+}
+
+.btn {
+    border-radius: 0.375rem;
+    padding: 0.5rem 1rem;
+}
+
+.bg-light {
+    background-color: #f8f9fa !important;
+}
+</style>
+{% endblock %}

@@ -188,7 +188,7 @@
 
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">{% if is_edit %}Сохранить изменения{% else %}Создать задачу{% endif %}</button>
-                        <a href="{% if is_edit and task %}{% url 'tasks:task_detail' task.get_public_slug %}{% else %}{% url 'tasks:task_list' %}{% endif %}" class="btn btn-secondary">Отмена</a>
+                        <a href="{% if is_edit and task %}{% url 'tasks:task_detail' task.slug %}{% else %}{% url 'tasks:task_list' %}{% endif %}" class="btn btn-secondary">Отмена</a>
                     </div>
                 </form>
             </div>

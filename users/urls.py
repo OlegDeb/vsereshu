@@ -13,6 +13,7 @@ urlpatterns = [
     path('profile/edit/', views.profile_edit, name='profile_edit'),
     path('profile/my-tasks/', views.my_tasks, name='my_tasks'),
     path('profile/my-services/', views.my_services, name='my_services'),
+    path('profile/my-vacancies/', views.my_vacancies, name='my_vacancies'),
     path('user/<str:username>/', views.public_profile, name='public_profile'),
     # Жалобы и модерация
     path('complaint/', views.file_complaint, name='file_complaint'),

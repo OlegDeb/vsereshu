@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block title %}{% if selected_specialty %}{{ selected_specialty.name }}{% else %}Вакансии{% endif %}{% endblock %}
+
+{% block description %}{% if selected_specialty %}{{ selected_specialty.description|default:selected_specialty.name|truncatechars:100 }}{% else %}Список актуальных вакансий от проверенных работодателей. Найдите работу своей мечты!{% endif %}{% endblock %}
+
+{% block page_header %}
+<!-- Блок с градиентом и заголовком -->
+<div class="task-header-gradient">
+    <div class="container">
+        <div class="text-center text-white">
+            <h1 class="display-5 fw-bold mb-3">
+                {% if selected_specialty %}
+                    {{ selected_specialty.name }}
+                {% else %}
+                    Все вакансии
+                {% endif %}
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb justify-content-center mb-0 breadcrumb-header">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'home' %}" class="text-white text-decoration-none">Главная</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'vacancies:vacancy_list' %}" class="text-white text-decoration-none">Вакансии</a>
+                    </li>
+                    {% if selected_specialty %}
+                        <li class="breadcrumb-item active text-white" aria-current="page">{{ selected_specialty.name }}</li>
+                    {% endif %}
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Основной контент -->
+    <div class="col-lg-9">
+        <!-- Форма поиска -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <input type="text"
+                                   name="search"
+                                   class="form-control"
+                                   placeholder="Поиск по названию, описанию или месту работы..."
+                                   value="{{ request.GET.search|default:'' }}">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="bi bi-search"></i> Найти
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <select name="sort" class="form-select" onchange="this.form.submit()">
+                            <option value="-created_at" {% if request.GET.sort == '-created_at' %}selected{% endif %}>Сначала новые</option>
+                            <option value="created_at" {% if request.GET.sort == 'created_at' %}selected{% endif %}>Сначала старые</option>
+                            <option value="-salary" {% if request.GET.sort == '-salary' %}selected{% endif %}>По убыванию зарплаты</option>
+                            <option value="salary" {% if request.GET.sort == 'salary' %}selected{% endif %}>По возрастанию зарплаты</option>
+                            <option value="-views" {% if request.GET.sort == '-views' %}selected{% endif %}>По популярности</option>
+                        </select>
+                    </div>
+                    {% for key, value in request.GET.items %}
+                        {% if key != 'search' and key != 'sort' %}
+                            <input type="hidden" name="{{ key }}" value="{{ value }}">
+                        {% endif %}
+                    {% endfor %}
+                </form>
+            </div>
+        </div>
+        
+        {% if vacancies %}
+            <div class="row g-4">
+                {% for vacancy in vacancies %}
+                    <div class="col-12">
+                        <a href="{% url 'vacancies:vacancy_detail' vacancy.slug %}" class="text-decoration-none">
+                            <div class="card shadow-sm vacancy-card" style="transition: transform 0.3s ease, box-shadow 0.3s ease; border-radius: 15px; border: 2px solid #e9ecef !important; background-color: #ffffff;">
+                                <div class="card-body p-4">
+                                    <!-- Просмотры, дата, специальность (сверху) -->
+                                    <div class="d-flex flex-wrap gap-2 mb-3" style="font-size: 0.9rem;">
+                                        <span class="badge bg-light text-dark" style="padding: 0.4rem 0.6rem;">
+                                            <i class="bi bi-eye me-1"></i><strong>{{ vacancy.views }}</strong>
+                                        </span>
+                                        <span class="badge bg-light text-dark" style="padding: 0.4rem 0.6rem;">
+                                            <i class="bi bi-calendar me-1"></i><strong>{{ vacancy.created_at|date:"d.m.Y" }}</strong>
+                                        </span>
+                                        <span class="badge bg-light text-dark" style="padding: 0.4rem 0.6rem;">
+                                            <i class="bi bi-tag me-1"></i><strong>{{ vacancy.specialty.name|truncatewords:2 }}</strong>
+                                        </span>
+                                        {% if vacancy.responses_count > 0 %}
+                                            <span class="badge bg-success text-white" style="padding: 0.4rem 0.6rem;">
+                                                <i class="bi bi-person-check me-1"></i><strong>{{ vacancy.responses_count }}</strong>
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Заголовок -->
+                                    <h4 class="card-title fw-bold mb-3" style="color: #667eea; font-size: 1.25rem;">
+                                        {{ vacancy.title|truncatewords:10 }}
+                                    </h4>
+                                    
+                                    <!-- Описание -->
+                                    <p class="card-text mb-3 vacancy-description-card" style="font-size: 1rem; color: #495057; line-height: 1.6;">{{ vacancy.description|truncatechars:200 }}</p>
+                                    
+                                    <!-- Опыт, тип занятости, зарплата (в один ряд) -->
+                                    <div class="d-flex flex-wrap gap-3 align-items-center" style="font-size: 0.95rem; color: #6c757d;">
+                                        <span>
+                                            <i class="bi bi-clock-history me-1"></i><strong>{{ vacancy.get_experience_display }}</strong>
+                                        </span>
+                                        <span>
+                                            <i class="bi bi-briefcase me-1"></i><strong>{{ vacancy.get_employment_type_display }}</strong>
+                                        </span>
+                                        <span>
+                                            <i class="bi bi-geo-alt me-1"></i><strong>{{ vacancy.get_work_nature_display }}</strong>
+                                        </span>
+                                        {% if vacancy.salary %}
+                                            <span class="text-primary fw-bold ms-auto" style="font-size: 1.1rem;">
+                                                <i class="bi bi-currency-exchange me-1"></i>{{ vacancy.salary|floatformat:0 }}  ₽
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Место работы -->
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="bi bi-geo me-1"></i>
+                                            {% if vacancy.city %}
+                                                {{ vacancy.city.get_full_name }}
+                                            {% else %}
+                                                {{ vacancy.location }}
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Пагинация -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if selected_specialty %}specialty={{ selected_specialty.slug }}&{% endif %}{% if selected_experience %}experience={{ selected_experience }}&{% endif %}{% if selected_employment_type %}employment_type={{ selected_employment_type }}&{% endif %}{% if selected_author %}author={{ selected_author.username }}&{% endif %}page={{ page_obj.previous_page_number }}">Предыдущая</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Предыдущая</span>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% if selected_specialty %}specialty={{ selected_specialty.slug }}&{% endif %}{% if selected_experience %}experience={{ selected_experience }}&{% endif %}{% if selected_employment_type %}employment_type={{ selected_employment_type }}&{% endif %}{% if selected_author %}author={{ selected_author.username }}&{% endif %}page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if selected_specialty %}specialty={{ selected_specialty.slug }}&{% endif %}{% if selected_experience %}experience={{ selected_experience }}&{% endif %}{% if selected_employment_type %}employment_type={{ selected_employment_type }}&{% endif %}{% if selected_author %}author={{ selected_author.username }}&{% endif %}page={{ page_obj.next_page_number }}">Следующая</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Следующая</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>Пока нет активных вакансий.
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Сайдбар с фильтрами -->
+    <div class="col-lg-3 mb-4">
+        <div class="sticky-sidebar-filters">
+        <!-- Фильтр по специальностям -->
+        {% if specialties %}
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="bi bi-tags me-2"></i>Специальности
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-column gap-2">
+                        <a href="{% url 'vacancies:vacancy_list' %}"
+                           class="badge {% if not selected_specialty %}gradient-badge text-white{% else %}bg-secondary{% endif %} text-decoration-none p-2">
+                            Все специальности
+                        </a>
+                        {% for specialty in specialties %}
+                            <a href="?specialty={{ specialty.slug }}"
+                               class="badge {% if selected_specialty and selected_specialty.slug == specialty.slug %}gradient-badge text-white{% else %}bg-light text-dark{% endif %} text-decoration-none p-2">
+                                {{ specialty.name }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        
+        <!-- Фильтр по опыту работы -->
+        <div class="card shadow-sm mt-3">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">
+                    <i class="bi bi-clock-history me-2"></i>Опыт работы
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-column gap-2">
+                    <a href="?{% if selected_specialty %}specialty={{ selected_specialty.slug }}&{% endif %}"
+                       class="badge {% if not selected_experience %}gradient-badge text-white{% else %}bg-secondary{% endif %} text-decoration-none p-2">
+                        Любой опыт
+                    </a>
+                    {% for exp_key, exp_name in experience_choices %}
+                        <a href="?{% if selected_specialty %}specialty={{ selected_specialty.slug }}&{% endif %}experience={{ exp_key }}"
+                           class="badge {% if selected_experience == exp_key %}gradient-badge text-white{% else %}bg-light text-dark{% endif %} text-decoration-none p-2">
+                            {{ exp_name }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Фильтр по типу занятости -->
+        <div class="card shadow-sm mt-3">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">
+                    <i class="bi bi-briefcase me-2"></i>Тип занятости
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-column gap-2">
+                    <a href="?{% if selected_specialty %}specialty={{ selected_specialty.slug }}&{% endif %}"
+                       class="badge {% if not selected_employment_type %}gradient-badge text-white{% else %}bg-secondary{% endif %} text-decoration-none p-2">
+                        Любой тип
+                    </a>
+                    {% for emp_key, emp_name in employment_type_choices %}
+                        <a href="?{% if selected_specialty %}specialty={{ selected_specialty.slug }}&{% endif %}employment_type={{ emp_key }}"
+                           class="badge {% if selected_employment_type == emp_key %}gradient-badge text-white{% else %}bg-light text-dark{% endif %} text-decoration-none p-2">
+                            {{ emp_name }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Кнопка создать вакансию -->
+        {% if user.is_authenticated %}
+            <div class="card shadow-sm mt-3">
+                <div class="card-body">
+                    <a href="{% url 'vacancies:create_vacancy' %}" class="btn btn-primary w-100">
+                        <i class="bi bi-plus-circle me-1"></i>Создать вакансию
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

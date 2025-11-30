@@ -72,11 +72,11 @@
                             </div>
                             <div class="card-footer bg-transparent border-0">
                                 <div class="d-flex gap-2">
-                                    <a class="btn btn-outline-primary btn-sm flex-fill" href="{% url 'services:service_detail' service.get_public_slug %}">
+                                    <a class="btn btn-outline-primary btn-sm flex-fill" href="{% url 'services:service_detail' service.slug %}">
                                         Подробнее
                                     </a>
                                     {% if not service.is_moderated %}
-                                        <a class="btn btn-outline-secondary btn-sm" href="{% url 'services:edit_service' service.get_public_slug %}" title="Редактировать">
+                                        <a class="btn btn-outline-secondary btn-sm" href="{% url 'services:edit_service' service.slug %}" title="Редактировать">
                                             <i class="bi bi-pencil"></i>
                                         </a>
                                     {% endif %}
